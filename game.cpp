@@ -2,12 +2,13 @@
 #include <string>
 using namespace std;
 const int MAX_ITEMS_CARRIED=3;
-enum Location {}Ploc;
-struct CharInfo{
+enum location {quarters,hold,galley,brig,wheel,tree,uDeck,lDeck,gPlank,island
+,no_room};
+struct character{
     int itemsAmnt;
     string item[MAX_ITEMS_CARRIED];
-    /*Ploc CharLocation;*/
-}Jack;
+    location charLocation;
+};
 void CaptiansQuarters();
 void CargoHold();
 void Galley();
@@ -18,12 +19,14 @@ void UpperDeck();
 void LowerDeck();
 void Gangplank();
 void Island();
-void processCommand();
-void navigate(string);
+void ProcessCommand();
+int Navigate(string);
 
 
 int main()
 {
+    character player;
+    player.charLocation = island;
     bool WIN_GAME, HAS_BANANA, SAID_KEYWORD, GAVE_TREASURE, HAS_KEY, HAS_KNIFE;
     int x;
     cout<<"You have just awakened on a strange island with a terrible headache."
@@ -33,7 +36,6 @@ int main()
 
     while(not WIN_GAME)
     {
-        processCommand();
         cout<<"to end program enter 1"<<endl;
         cin>>WIN_GAME;
     }
@@ -103,9 +105,9 @@ void Island()
 /*the function in which all of the player's interaction with the
 Island will happen.*/
 {
-    
+    ProcessCommand();
 }
-void processCommand()
+void ProcessCommand()
 // Separates the command into two strings: word_one and word_two
 {
     string commands, word_one, word_two;
@@ -116,12 +118,65 @@ void processCommand()
     word_two = commands.substr(spaceholder+1);
     if (word_one == "go" or word_one == "move")
     {
-        navigate(word_two);
+        Navigate(word_two);
     }
 }
-void navigate(string direction)
+int Navigate(string direction)
 {
-    cout << "navigation\n";
+    if (direction == "north" or direction == "n")
+    {
+        return 0;
+    }
+    else if (direction == "east" or direction == "e")
+    {
+        return 1;
+    }
+    else if (direction == "south" or direction == "s")
+    {
+        return 2;
+    }
+    else if (direction == "west" or direction == "w")
+    {
+        return 3;
+    }
+    else if (direction == "up" or direction == "u")
+    {
+        return 4;
+    }
+    else if (direction == "down" or direction == "d")
+    {
+        return 5;
+    }
+    else
+    {
+        cout<<"Invalid direction. Please enter a cardinal direction, \"up\", or"
+        <<" \"down\".\n";
+        getline(cin, direction);
+        return navigate(direction);
+    }
+}
+void moveTo(location nextLoc)
+{
+    switch (nextLoc) {
+        case 0:
+            CaptainsQuarters();
+            break;
+        case 1:
+            
+            break;
+        case 2:
+            
+            break;
+        case 3:
+            
+            break;
+        case 4:
+            
+            break;
+        case 5:
+            
+            break;
+    }
 }
 
 // Copyright 2020 Greg Jamison's 2020 Spring CSCI 40 Class

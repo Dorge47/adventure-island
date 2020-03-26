@@ -243,6 +243,12 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     {
         Navigate(cInfo, lInfo, word_two);
     }
+    else if (word_one == "n" or word_one == "e" or word_one == "s" or word_one
+    == "w" or word_one == "north" or word_one == "east" or word_one == "south"
+    or word_one == "west")
+    {
+        Navigate(cInfo, lInfo, word_one);
+    }
     else if (word_one == "look")
     {
         if (one_word)
@@ -336,6 +342,11 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
 }
 void Navigate(CharInfo cInfo, locInfo lInfo[], string direction)
 {
+    int spaceholder = direction.find(" ");
+    if (spaceholder != -1)
+    {
+        direction = direction.substr(spaceholder+1);
+    }
     if (direction == "north" or direction == "n")
     {
         goToLoc(cInfo, lInfo, cInfo.playerLocation.nextRoom.north);

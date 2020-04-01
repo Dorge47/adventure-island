@@ -405,11 +405,6 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             ProcessCommand(cInfo, lInfo);
         }
     }
-    else if (word_one == "debug")
-    {
-        cout << cInfo.name[0] << endl;
-        ProcessCommand(cInfo, lInfo);
-    }
     else if (word_one == "quit" or word_one == "exit" or word_one == "close")
     {
     }

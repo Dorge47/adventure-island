@@ -872,14 +872,14 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
                 }
                 else
                 {
-                    cout << "You punch through the closed trunk and spend a great "
-                    << "deal of time and effort pulling the treasure through the "
-                    << "hole you created. After several minutes you manage to "
-                    << "remove your splinter-ridden hand from the trunk, clutching "
-                    << "the treasure. The force with which you remove your hand "
-                    << "pushes the top of the trunk open. You realize it was never "
-                    << "locked, and you could have just opened the trunk first...\n"
-                    << "\nYou got the treasure.\n";
+                    cout << "You punch through the closed trunk and spend a "
+                    << "great deal of time and effort pulling the treasure "
+                    << "through the hole you created. After several minutes you"
+                    << " manage to remove your splinter-ridden hand from the "
+                    << "trunk, clutching the treasure. The force with which you"
+                    << " remove your hand pushes the top of the trunk open. You"
+                    << " realize it was never locked, and you could have just "
+                    << "opened the trunk first...\n\nYou got the treasure.\n";
                     getItem(cInfo, lInfo, "treasure");
                 }
             }

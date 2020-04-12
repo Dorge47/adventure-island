@@ -28,7 +28,7 @@ struct CharInfo{
     string name;
     bool SAID_KEYWORD, GAVE_TREASURE, WIN_GAME, SEEN_NATIVES, GAVE_BANANA,
     SEEN_I, SEEN_L, SEEN_Q, SEEN_W, SEEN_G, SEEN_H, SEEN_B, OPENED_TRUNK,
-    OPENED_CELL, GOT_KEY_EARLY, BONKED;
+    OPENED_CELL, GOT_KEY_EARLY, BONKED, EGG_ONE;
 };
 void startGame(CharInfo, locInfo[]);
 void CaptainsQuarters(CharInfo, locInfo[]);
@@ -43,11 +43,13 @@ void Island(CharInfo, locInfo[]);
 void ProcessCommand(CharInfo, locInfo[]);
 void Look(CharInfo, locInfo[], string);
 void Take(CharInfo, locInfo[], string);
+void Give(CharInfo, locInfo[], string);
 void Navigate(CharInfo, locInfo[], string);
 void goToLoc(CharInfo, locInfo[], string);
 bool inventoryContains(string[], string);
 bool InventoryFull(string[]);
 void getItem(CharInfo, locInfo[], string);
+void removeItem(CharInfo, locInfo[], string);
 
 int main()
 {
@@ -185,6 +187,7 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     cInfo.OPENED_CELL = false;
     cInfo.GOT_KEY_EARLY = false;
     cInfo.BONKED = false;
+    cInfo.EGG_ONE = false;
     for (int i = 0; i <= MAX_ITEMS_CARRIED; i++)
     {
         cInfo.item[i] = "empty";
@@ -299,7 +302,14 @@ ShipsWheel will happen.*/
         }
         else
         {
-            cout << cInfo.playerLocation.description << endl;
+            if (cInfo.GAVE_BANANA)
+            {
+                cout << "There is a wheel here. The deck is to the west.\n";
+            }
+            else
+            {
+                cout << cInfo.playerLocation.description << endl;
+            }
         }
         ProcessCommand(cInfo, lInfo);
         return 0;
@@ -422,6 +432,18 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         else
         {
             Take(cInfo, lInfo, word_two);
+        }
+    }
+    else if (word_one == "give" or word_one == "present")
+    {
+        if (one_word)
+        {
+            cout << "You must specify something to give.\n";
+            ProcessCommand(cInfo,lInfo);
+        }
+        else
+        {
+            Give(cInfo, lInfo, word_two);
         }
     }
     else if (word_one == "quit" or word_one == "exit" or word_one == "close")
@@ -841,30 +863,31 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     {
         if (rL == hold)
         {
-            if (cInfo.OPENED_TRUNK)
+            if (not cInfo.GAVE_TREASURE)
             {
-                if (not cInfo.GAVE_TREASURE)
+                if (cInfo.OPENED_TRUNK)
                 {
                     cout << "You got the treasure.\n";
                     getItem(cInfo, lInfo, "treasure");
                 }
-                else {
-                    cout << "You've already given the treasure to the natives"
-                    << "...\n";
-                    ProcessCommand(cInfo, lInfo);
+                else
+                {
+                    cout << "You punch through the closed trunk and spend a great "
+                    << "deal of time and effort pulling the treasure through the "
+                    << "hole you created. After several minutes you manage to "
+                    << "remove your splinter-ridden hand from the trunk, clutching "
+                    << "the treasure. The force with which you remove your hand "
+                    << "pushes the top of the trunk open. You realize it was never "
+                    << "locked, and you could have just opened the trunk first...\n"
+                    << "\nYou got the treasure.\n";
+                    getItem(cInfo, lInfo, "treasure");
                 }
             }
             else
             {
-                cout << "You punch through the closed trunk and spend a great "
-                << "deal of time and effort pulling the treasure through the "
-                << "hole you created. After several minutes you manage to "
-                << "remove your splinter-ridden hand from the trunk, clutching "
-                << "the treasure. The force with which you remove your hand "
-                << "pushes the top of the trunk open. You realize it was never "
-                << "locked, and you could have just opened the trunk first...\n"
-                << "\nYou got the treasure.\n";
-                getItem(cInfo, lInfo, "treasure");
+                cout << "You've already given the treasure to the natives"
+                << "...\n";
+                ProcessCommand(cInfo, lInfo);
             }
         }
         else
@@ -1022,6 +1045,137 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
         ProcessCommand(cInfo, lInfo);
     }
 }
+void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
+{
+    Location rL = cInfo.playerLocation.rawLoc;
+    if (objGive == "bananas")
+    {
+        objGive = "banana";
+    }
+    if (objGive == "keys")
+    {
+        objGive == "key";
+    }
+    if (not (objGive == "banana") and not (objGive == "knife") and not
+    (objGive == "key") and not (objGive == "treasure"))
+    {
+        cout << "I only understood you as far as wanting to give.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (not inventoryContains(cInfo.item, objGive))
+    {
+        cout << "You don't have a " << objGive << ".\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (objGive == "knife")
+    {
+        cout << "You should probably keep the knife.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (objGive == "banana")
+    {
+        if (rL == wheel and not cInfo.GAVE_BANANA)
+        {
+            cout << "You gave the gorilla the banana. He seems offended for "
+            << "some reason, but takes it anyway.\n";
+            cInfo.GAVE_BANANA = true;
+            removeItem(cInfo, lInfo, "banana");
+        }
+        else if (rL == galley)
+        {
+            cout << "The parrot doesn't seem to want the banana.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == brig and not cInfo.OPENED_CELL)
+        {
+            cout << "The prisoner is allergic to bananas, so best not.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == uDeck and not cInfo.GAVE_TREASURE and cInfo.SEEN_NATIVES)
+        {
+            cout << "The natives probably have their own supply of bananas.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is nobody here to whom you can give the banana.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objGive == "key")
+    {
+        if (rL == wheel and not cInfo.GAVE_BANANA)
+        {
+            cout << "The gorilla doesn't seem to want the key.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == galley)
+        {
+            cout << "The parrot doesn't seem to want the key.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == brig and not cInfo.OPENED_CELL)
+        {
+            cout << "The prisoner says \"You found the key! I don't have a "
+            << "keyhole on this side, so go ahead and unlock that side and get "
+            << "me out of here.\"\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == uDeck and cInfo.SEEN_NATIVES and not cInfo.GAVE_TREASURE)
+        {
+            cout << "The natives have no interest in a key.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is nobody here to whom you can give the key.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objGive == "treasure")
+    {
+        if (rL == uDeck and cInfo.SEEN_NATIVES)
+        {
+            cout << "You lay the treasure at the base of the gangplank. One of "
+            << "the natives steps forward, picks it up, and looks it over. He "
+            << "gives you a brief nod of approval and shouts something in his "
+            << "language. He and the rest of the natives disperse, clearing a "
+            << "way back to the island.\n";
+            cInfo.GAVE_TREASURE = true;
+            removeItem(cInfo, lInfo, "treasure");
+        }
+        else if (rL == wheel and not cInfo.EGG_ONE)
+        {
+            cout << "The gorilla takes the treasure from you and examines it. "
+            << "He says \"I believe I've seen something like this before among "
+            << "the island natives. They take great pride in their treasure, "
+            << "and would likely love to have it back.\" He returns it to you "
+            << "before remembering that gorillas can't talk.\n";
+            cInfo.EGG_ONE = true;
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == wheel)
+        {
+            cout << "The gorilla doesn't seem to want the treasure.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == galley)
+        {
+            cout << "The parrot doesn't seem to want the treasure.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == brig and not cInfo.OPENED_CELL)
+        {
+            cout << "The prisoner is taking a nap right now, though I'm sure "
+            << "he'd be flattered that you thought of him.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else {
+            cout << "There is nobody here to whom you can give the treasure.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+}
 void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
 {
     Location rL = cInfo.playerLocation.rawLoc;
@@ -1175,6 +1329,27 @@ void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
     else
     {
         cInfo.item[spaceNumber] = objGet;
+        ProcessCommand(cInfo, lInfo);
+    }
+}
+void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
+{
+    int spaceNumber = -1;
+    for (int i = MAX_ITEMS_CARRIED; i >= 0; i--)
+    {
+        if (cInfo.item[i] == objRem)
+        {
+            spaceNumber = i;
+        }
+    }
+    if (spaceNumber == -1)
+    {
+        cout << "ERROR: No item\n";
+        abort();
+    }
+    else
+    {
+        cInfo.item[spaceNumber] = "empty";
         ProcessCommand(cInfo, lInfo);
     }
 }

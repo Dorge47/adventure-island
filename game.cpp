@@ -42,9 +42,12 @@ void LowerDeck(CharInfo, locInfo[]);
 void Island(CharInfo, locInfo[]);
 void ProcessCommand(CharInfo, locInfo[]);
 void Look(CharInfo, locInfo[], string);
+void Take(CharInfo, locInfo[], string);
 void Navigate(CharInfo, locInfo[], string);
 void goToLoc(CharInfo, locInfo[], string);
 bool inventoryContains(string[], string);
+bool InventoryFull(string[]);
+void getItem(CharInfo, locInfo[], string);
 
 int main()
 {
@@ -182,6 +185,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     cInfo.OPENED_CELL = false;
     cInfo.GOT_KEY_EARLY = false;
     cInfo.BONKED = false;
+    for (int i = 0; i <= MAX_ITEMS_CARRIED; i++)
+    {
+        cInfo.item[i] = "empty";
+    }
     Island(cInfo, lInfo);
 }
 void CaptainsQuarters(CharInfo cInfo, locInfo lInfo[])
@@ -384,14 +391,14 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     {
         Navigate(cInfo, lInfo, word_one);
     }
-    else if (word_one == "look")
+    else if (word_one == "look" or word_one == "inspect")
     {
         if (one_word or word_two == "room" or word_two == "around")
         {
             goToLoc(cInfo, lInfo, cInfo.playerLocation.name);
         }
-        else if (word_two == "ladder" and cInfo.playerLocation.rawLoc == lDeck and
-        not cInfo.BONKED)
+        else if (word_two == "ladder" and cInfo.playerLocation.rawLoc == lDeck
+        and not cInfo.BONKED)
         {
             cout << "You turn around and smack your head into the ladder, "
             << "forgetting how close you were to it. That's gonna leave a "
@@ -403,6 +410,18 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         {
             Look(cInfo, lInfo, word_two);
             ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (word_one == "take" or word_one == "get" or word_one == "grab")
+    {
+        if (one_word)
+        {
+            cout << "You must specify something to take.\n";
+            ProcessCommand(cInfo,lInfo);
+        }
+        else
+        {
+            Take(cInfo, lInfo, word_two);
         }
     }
     else if (word_one == "quit" or word_one == "exit" or word_one == "close")
@@ -417,6 +436,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
 }
 void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
 {
+    // Shorten location so we don't have to use "cInfo.playerLocation.rawLoc"
     Location rL = cInfo.playerLocation.rawLoc;
     if (objLook == "up")
     {
@@ -481,7 +501,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
     else if (objLook == "gorilla")
     {
-        if (rL == wheel and cInfo.GAVE_BANANA == false)
+        if (rL == wheel and not cInfo.GAVE_BANANA)
         {
             cout << "The gorilla looks hostile. Probably best to leave it "
             << "alone.\n";
@@ -629,8 +649,8 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         {
             if (cInfo.GOT_KEY_EARLY)
             {
-                cout << "The parrot left because you didn't say hi to him. I "
-                << "hope you're happy.\n";
+                cout << "The parrot looks crestfallen, probably because you "
+                << "didn't say hi to him. I hope you're happy.\n";
             }
             else if (cInfo.SAID_KEYWORD)
             {
@@ -670,14 +690,18 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             cout << "The key is golden, with a \"" << cInfo.name[0] << "\" on "
             << "one side.\n";
         }
-        if (cInfo.SAID_KEYWORD and rL == quarters)
+        else if (cInfo.SAID_KEYWORD and rL == quarters)
         {
             cout << "The key was under the captain's bed, just like the parrot "
             << "said it would be.\n";
         }
+        else if (rL == quarters)
+        {
+            cout << "You don't see a key anywhere.\n";
+        }
         else
         {
-            cout << "There are no keys here.\n";
+            cout << "There is no key here.\n";
         }
     }
     else if (objLook == "ladder")
@@ -738,6 +762,264 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     else
     {
         cout << "I only understood you as far as wanting to look.\n";
+    }
+}
+void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
+{
+    Location rL = cInfo.playerLocation.rawLoc;
+    if (objTake == "bananas")
+    {
+        objTake = "banana";
+    }
+    if (objTake == "keys")
+    {
+        objTake = "key";
+    }
+    if (inventoryContains(cInfo.item, objTake))
+    {
+        cout << "You already have the " << objTake << ".\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (InventoryFull(cInfo.item))
+    {
+        cout << "Inventory is full.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (objTake == "gorilla")
+    {
+        if (rL == wheel)
+        {
+            cout << "You cannot.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no gorilla here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "knife")
+    {
+        if (rL == quarters)
+        {
+            cout << "You got the knife.\n";
+            getItem(cInfo, lInfo, "knife");
+        }
+        else
+        {
+            cout << "There is no knife here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "banana")
+    {
+        if (rL == banana_tree)
+        {
+            if (inventoryContains(cInfo.item, "banana"))
+            {
+                cout << "You already have the banana.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+            else if (inventoryContains(cInfo.item, "knife"))
+            {
+                cout << "You got the banana.\n";
+                getItem(cInfo, lInfo, "banana");
+            }
+            else
+            {
+                cout << "You cannot separate the banana from the tree.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+        }
+        else
+        {
+            cout << "There are no bananas here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "treasure")
+    {
+        if (rL == hold)
+        {
+            if (cInfo.OPENED_TRUNK)
+            {
+                if (not cInfo.GAVE_TREASURE)
+                {
+                    cout << "You got the treasure.\n";
+                    getItem(cInfo, lInfo, "treasure");
+                }
+                else {
+                    cout << "You've already given the treasure to the natives"
+                    << "...\n";
+                    ProcessCommand(cInfo, lInfo);
+                }
+            }
+            else
+            {
+                cout << "You punch through the closed trunk and spend a great "
+                << "deal of time and effort pulling the treasure through the "
+                << "hole you created. After several minutes you manage to "
+                << "remove your splinter-ridden hand from the trunk, clutching "
+                << "the treasure. The force with which you remove your hand "
+                << "pushes the top of the trunk open. You realize it was never "
+                << "locked, and you could have just opened the trunk first...\n"
+                << "\nYou got the treasure.\n";
+                getItem(cInfo, lInfo, "treasure");
+            }
+        }
+        else
+        {
+            cout << "There is no treasure here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "trunk")
+    {
+        if (rL == hold)
+        {
+            cout << "The trunk is too heavy to carry.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no trunk here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "door")
+    {
+        if (rL == quarters or rL == galley or rL == hold)
+        {
+            cout << "You cannot remove the door from the frame, and frankly I "
+            << "don't understand why you would want to.";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == uDeck or rL == lDeck)
+        {
+            cout << "There are no doors within reach.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There are no doors here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "cell")
+    {
+        if (rL == brig)
+        {
+            cout << "Not physically possible.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no cell here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "parrot")
+    {
+        if (rL == galley)
+        {
+            cout << "The parrot seems opposed to the idea.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "The parrot isn't here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "ship")
+    {
+        cout << "That's the goal, but it wouldn't be any fun if it were that "
+        << "easy.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (objTake == "key")
+    {
+        if (rL == quarters)
+        {
+            if (cInfo.SAID_KEYWORD)
+            {
+                cout << "You got the key.\n";
+                getItem(cInfo, lInfo, "key");
+            }
+            else
+            {
+                cout << "You were in such a rush to finish the game without "
+                << "properly solving the puzzles that you decided to ignore the"
+                << " parrot completely and just go straight for the key. "
+                << "Nobody is happy about this.\n";
+                cInfo.GOT_KEY_EARLY = true;
+                getItem(cInfo, lInfo, "key");
+            }
+        }
+        else
+        {
+            cout << "There is no key here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "room")
+    {
+        if (rL == quarters or rL == galley or rL == hold)
+        {
+            cout << "What? How? Why? I don't understand how that would even "
+            << "work. No.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no room here. Also I don't think that's "
+            << "possible.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "ladder")
+    {
+        if (rL == uDeck)
+        {
+            cout << "The ladder is a part of the ship.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == lDeck)
+        {
+            cout << "The ladder is a part of the ship. You cannot remove it "
+            << "from the wall.";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "tree")
+    {
+        if (rL == island or rL == banana_tree)
+        {
+            cout << "The trees are rooted and probably wouldn't fit in your "
+            << "pockets.\n";
+        }
+        else
+        {
+            cout << "There are no trees here.\n";
+        }
+    }
+    else if (objTake == "trapdoor")
+    {
+        if (rL == lDeck or rL == brig)
+        {
+            cout << "Please don't.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no trapdoor here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else
+    {
+        cout << "I only understood you as far as wanting to take.\n";
+        ProcessCommand(cInfo, lInfo);
     }
 }
 void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
@@ -863,6 +1145,38 @@ bool inventoryContains(string inventory[], string item)
         }
     }
     return false;
+}
+bool InventoryFull(string inventory[])
+{
+    for (int i = 0; i <= MAX_ITEMS_CARRIED; i++)
+    {
+        if (inventory[i] == "empty")
+        {
+            return false;
+        }
+    }
+    return true;
+}
+void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
+{
+    int spaceNumber = -1;
+    for (int i = MAX_ITEMS_CARRIED; i >= 0; i--)
+    {
+        if (cInfo.item[i] == "empty")
+        {
+            spaceNumber = i;
+        }
+    }
+    if (spaceNumber == -1)
+    {
+        cout << "ERROR: Inventory overflow\n";
+        abort();
+    }
+    else
+    {
+        cInfo.item[spaceNumber] = objGet;
+        ProcessCommand(cInfo, lInfo);
+    }
 }
 
 // Copyright 2020 Greg Jamison's 2020 Spring CSCI 40 Class

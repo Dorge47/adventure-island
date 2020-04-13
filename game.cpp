@@ -36,7 +36,7 @@ void CaptainsQuarters(CharInfo, locInfo[]);
 void CargoHold(CharInfo, locInfo[]);
 void Galley(CharInfo, locInfo[]);
 void Brig(CharInfo, locInfo[]);
-int ShipsWheel(CharInfo, locInfo[]);
+void ShipsWheel(CharInfo, locInfo[]);
 void BananaTree(CharInfo, locInfo[]);
 void UpperDeck(CharInfo, locInfo[]);
 void LowerDeck(CharInfo, locInfo[]);
@@ -47,6 +47,7 @@ void Take(CharInfo, locInfo[], string);
 void Give(CharInfo, locInfo[], string);
 void Eat(CharInfo, locInfo[], string);
 void Cut(CharInfo, locInfo[], string);
+void Unlock(CharInfo, locInfo[], string);
 void Open(CharInfo, locInfo[], string);
 void Navigate(CharInfo, locInfo[], string);
 void goToLoc(CharInfo, locInfo[], string);
@@ -60,23 +61,12 @@ int main()
 {
     CharInfo cInfo;
     locInfo room[no_room];
-    bool WIN_GAME;
-    int x;
     cout<<"What is your name?\n\n";
     getline(cin,cInfo.name);
     cout << endl;
     cout<<"You have just awakened on a strange island with a terrible headache."
     <<" You can't remember anything about yourself or where you are.\n\n";
     startGame(cInfo, room);
-    while(not WIN_GAME)
-    {
-        cout<<"to end program enter 1"<<endl;
-        cin>>WIN_GAME;
-    }
-    if (WIN_GAME)
-           {
-           cout<<"You win. CRAB RAVE"<<endl;
-           }
     return 0;
 }
 void startGame(CharInfo cInfo, locInfo lInfo[]){
@@ -295,12 +285,18 @@ Brig will happen.*/
             <<"can sail out of here.\"\n";
             cInfo.SEEN_B = true;
         }
-        else {
+        else if (cInfo.OPENED_CELL)
+        {
+            cout << "The cell is open and empty. There is nothing else in the "
+            << "room besides a ladder leading back up.\n";
+        }
+        else
+        {
             cout << cInfo.playerLocation.description << endl;
         }
         ProcessCommand(cInfo, lInfo);
     }
-int ShipsWheel(CharInfo cInfo, locInfo lInfo[])
+void ShipsWheel(CharInfo cInfo, locInfo lInfo[])
 /*the function in which all of the player's interaction with the
 ShipsWheel will happen.*/
     {
@@ -315,7 +311,17 @@ ShipsWheel will happen.*/
         {
             if (cInfo.GAVE_BANANA)
             {
-                cout << "There is a wheel here. The deck is to the west.\n";
+                if (cInfo.OPENED_CELL)
+                {
+                    cout << "From the wheel you can see the prisoner sitting on"
+                    << " the ropes that connect the sails. He seems to know how"
+                    << " to work them. If you wish, you could set sail, or "
+                    << "return west to the deck.\n";
+                }
+                else
+                {
+                    cout << "There is a wheel here. The deck is to the west.\n";
+                }
             }
             else
             {
@@ -323,7 +329,6 @@ ShipsWheel will happen.*/
             }
         }
         ProcessCommand(cInfo, lInfo);
-        return 0;
     }
 void BananaTree(CharInfo cInfo, locInfo lInfo[])
 /*the function in which all of the player's interaction with the
@@ -402,14 +407,20 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     {
         one_word = true;
     }
-    if (word_one == "go" or word_one == "move" or word_one == "walk")
+    spaceholder = word_two.find(" ");
+    if (not (spaceholder == -1))
+    {
+        cout << "Please enter up to two words at a time.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (word_one == "go" or word_one == "move" or word_one == "walk")
     {
         Navigate(cInfo, lInfo, word_two);
     }
     else if (word_one == "n" or word_one == "e" or word_one == "s" or word_one
     == "w" or word_one == "u" or word_one == "d" or word_one == "north" or
     word_one == "east" or word_one == "south" or word_one == "west" or word_one
-    == "up" or word_one == "down")
+    == "up" or word_one == "down" or word_one == "climb" or word_one == "drop")
     {
         Navigate(cInfo, lInfo, word_one);
     }
@@ -489,6 +500,18 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             Cut(cInfo, lInfo, word_two);
         }
     }
+    else if (word_one == "unlock")
+    {
+        if (one_word)
+        {
+            cout << "You must specify something to unlock.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            Unlock(cInfo, lInfo, word_two);
+        }
+    }
     else if (word_one == "open")
     {
         if (one_word)
@@ -501,8 +524,79 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             Open(cInfo, lInfo, word_two);
         }
     }
+    else if (word_one == "sail")
+    {
+        if (rL == wheel)
+        {
+            if (cInfo.GAVE_BANANA)
+            {
+                if (cInfo.OPENED_CELL)
+                {
+                    cout << "Eager to leave the island behind, you and the "
+                    << "former prisoner get ready to set sail. As the anchor is"
+                    << " lifted and the sails are adjusted to the wind, ready "
+                    << "to carry you wherever you want to go, you look back at "
+                    << "the island one last time. ";
+                    if (not cInfo.EGG_ONE)
+                    {
+                        cout << "You're ending your journey with many questions"
+                        << " unanswered. Who you are, how you got here, and "
+                        << "where the rest of the crew went are all still "
+                        << "mysteries to you. But perhaps all that matters now "
+                        << "is that you can finally return home...\nWhere do "
+                        << "you live, again?\n\nEND\n\n";
+                    }
+                    else
+                    {
+                        cout << "A strange place filled with talking gorillas, "
+                        << "among other things. You're thankful to leave.\n\n"
+                        << "END\n\n";
+                    }
+                }
+                else
+                {
+                    cout << "You have no idea how to sail a ship.\n";
+                    ProcessCommand(cInfo, lInfo);
+                }
+            }
+            else
+            {
+                cout << "The gorilla blocks the wheel.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+        }
+        else
+        {
+            cout << "You can't sail the ship from here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if ((word_one == "polly" or word_one == "hello" or
+    word_one == "cracker" or word_one == "hi") and
+    cInfo.playerLocation.rawLoc == galley and not cInfo.SAID_KEYWORD)
+    {
+        cout << "The parrot lets out a delighted squawk and replies \"You "
+        << "figured it out! In exchange for solving my puzzle, I'll tell you "
+        << "where the captain hides the key to the brig: It's under the bed in "
+        << "the Captain's Quarters. Good luck!\"\n";
+        cInfo.SAID_KEYWORD = true;
+        ProcessCommand(cInfo, lInfo);
+    }
     else if (word_one == "quit" or word_one == "exit" or word_one == "close")
     {
+    }
+    else if (cInfo.playerLocation.rawLoc == galley and not cInfo.SAID_KEYWORD)
+    {
+        if (one_word)
+        {
+            cout << "The parrot replies: \"" << pigLatin(word_one) << "\".\n";
+        }
+        else
+        {
+            cout << "The parrot replies: \"" << pigLatin(word_one) << " "
+            << pigLatin(word_two) << "\".\n";
+        }
+        ProcessCommand(cInfo, lInfo);
     }
     else
     {
@@ -673,7 +767,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             }
             else
             {
-                cout << "The cell door is still closed.\n";
+                cout << "The cell door is still locked.\n";
             }
         }
         else {
@@ -694,7 +788,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             }
             else
             {
-                cout << "The cell door is still closed.\n";
+                cout << "The cell door is still locked.\n";
             }
         }
         else
@@ -1599,6 +1693,76 @@ void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
         ProcessCommand(cInfo, lInfo);
     }
 }
+void Unlock(CharInfo cInfo, locInfo lInfo[], string objUnlock)
+{
+    Location rL = cInfo.playerLocation.rawLoc;
+    if (objUnlock == "cell")
+    {
+        if (rL == brig)
+        {
+            if (inventoryContains(cInfo.item, "key"))
+            {
+                cout << "You unlock the cell.\n";
+                cInfo.UNLOCKED_CELL = true;
+                ProcessCommand(cInfo, lInfo);
+            }
+            else
+            {
+                cout << "You don't have the key.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+        }
+        else
+        {
+            cout << "There is no cell here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objUnlock == "door")
+    {
+        if (rL == uDeck or rL == lDeck)
+        {
+            cout << "There are no doors within reach.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else if (rL == quarters or rL == galley or rL == hold)
+        {
+            cout << "The door is already open.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There are no doors here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objUnlock == "trunk")
+    {
+        if (rL == hold)
+        {
+            if (cInfo.OPENED_TRUNK or cInfo.BROKE_TRUNK)
+            {
+                cout << "The trunk is already open.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+            else
+            {
+                cout << "You don't see a keyhole anywhere on the trunk.\n";
+                ProcessCommand(cInfo, lInfo);
+            }
+        }
+        else
+        {
+            cout << "There is no trunk here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else
+    {
+        cout << "I only understood you as far as wanting to unlock.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+}
 void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
 {
     Location rL = cInfo.playerLocation.rawLoc;
@@ -1694,11 +1858,11 @@ void Navigate(CharInfo cInfo, locInfo lInfo[], string drctn)
     {
         goToLoc(cInfo, lInfo, cInfo.playerLocation.nextRoom.west);
     }
-    else if (drctn == "up" or drctn == "u")
+    else if (drctn == "up" or drctn == "u" or drctn == "climb")
     {
         goToLoc(cInfo, lInfo, cInfo.playerLocation.nextRoom.up);
     }
-    else if (drctn == "down" or drctn == "d")
+    else if (drctn == "down" or drctn == "d" or drctn == "drop")
     {
         goToLoc(cInfo, lInfo, cInfo.playerLocation.nextRoom.down);
     }
@@ -1776,8 +1940,32 @@ void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
         ProcessCommand(cInfo, lInfo);
     }
 }
+string pigLatin(string inp)
+{
+    int vowelSpace;
+    string temp_one, temp_two, out;
+    vowelSpace = inp.find_first_of(VOWELS);
+    if (vowelSpace == -1)
+    {
+        out = inp + "ay";
+        return out;
+    }
+    else if (vowelSpace == 0)
+    {
+        out = inp + "way";
+        return out;
+    }
+    else
+    {
+        temp_one = inp.substr(0,vowelSpace);
+        temp_two = inp.substr(vowelSpace);
+        out = temp_two + temp_one + "ay";
+        return out;
+    }
+    
+}
 
-// Copyright 2020 Greg Jamison's 2020 Spring CSCI 40 Class
+// Copyright 2020 Christopher Andrade, Lawrence Reed, Amaan Ahmed
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

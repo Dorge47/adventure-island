@@ -1965,7 +1965,8 @@ string pigLatin(string inp)
     
 }
 
-// Copyright 2020 Christopher Andrade, Lawrence Reed, Amaan Ahmed, Ivan Dorantes
+// Copyright 2020 Christopher Andrade, Lawrence Rede, Amaan Ahmed,
+// Ivan Dorantes, Karlee Wilkinson
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

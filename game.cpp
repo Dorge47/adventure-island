@@ -188,7 +188,7 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     cInfo.GOT_KEY_EARLY = false;
     cInfo.BONKED = false;
     cInfo.EGG_ONE = false;
-    for (i = 0; i <= MAX_ITEMS_CARRIED; i++)
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
     {
         cInfo.item[i] = "empty";
     }
@@ -245,7 +245,7 @@ CargoHold will happen.*/
             }
             else if (cInfo.BROKE_TRUNK)
             {
-                cout << "an empty trunk.";
+                cout << "an empty trunk with a hole in the top.";
             }
             else
             {
@@ -735,7 +735,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         }
         else if (rL == HOLD)
         {
-            if (cInfo.OPENED_TRUNK)
+            if (cInfo.OPENED_TRUNK or cInfo.BROKE_TRUNK)
             {
                 if (not cInfo.GAVE_TREASURE)
                 {
@@ -1033,12 +1033,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     {
         if (rL == BANANA_TREE)
         {
-            if (inventoryContains(cInfo.item, "banana"))
-            {
-                cout << "You already have the banana.\n";
-                ProcessCommand(cInfo, lInfo);
-            }
-            else if (inventoryContains(cInfo.item, "knife"))
+            if (inventoryContains(cInfo.item, "knife"))
             {
                 cout << "You got the banana.\n";
                 getItem(cInfo, lInfo, "banana");
@@ -1059,12 +1054,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     {
         if (rL == BANANA_TREE)
         {
-            if (inventoryContains(cInfo.item, "banana"))
-            {
-                cout << "You already have the banana.\n";
-                ProcessCommand(cInfo, lInfo);
-            }
-            else if (inventoryContains(cInfo.item, "knife"))
+            if (inventoryContains(cInfo.item, "knife"))
             {
                 cout << "You got the banana.\n";
                 getItem(cInfo, lInfo, "banana");
@@ -1236,6 +1226,11 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
             << "from the wall.";
             ProcessCommand(cInfo, lInfo);
         }
+        else
+        {
+            cout << "There is no ladder here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
     }
     else if (objTake == "tree")
     {
@@ -1277,7 +1272,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
     }
     if (objGive == "keys")
     {
-        objGive == "key";
+        objGive = "key";
     }
     if (not (objGive == "banana") and not (objGive == "knife") and not
     (objGive == "key") and not (objGive == "treasure"))
@@ -1894,7 +1889,7 @@ void Navigate(CharInfo cInfo, locInfo lInfo[], string drctn)
 bool inventoryContains(string inventory[], string item)
 {
     int i;
-    for (i = 0; i <= MAX_ITEMS_CARRIED; i++)
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
     {
         if (inventory[i] == item)
         {
@@ -1906,7 +1901,7 @@ bool inventoryContains(string inventory[], string item)
 bool InventoryFull(string inventory[])
 {
     int i;
-    for (i = 0; i <= MAX_ITEMS_CARRIED; i++)
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
     {
         if (inventory[i] == "empty")
         {
@@ -1919,7 +1914,7 @@ void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
 {
     int i;
     int spaceNumber = -1;
-    for (i = MAX_ITEMS_CARRIED; i >= 0; i--)
+    for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
     {
         if (cInfo.item[i] == "empty")
         {
@@ -1941,7 +1936,7 @@ void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
 {
     int i;
     int spaceNumber = -1;
-    for (i = MAX_ITEMS_CARRIED; i >= 0; i--)
+    for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
     {
         if (cInfo.item[i] == objRem)
         {

@@ -21,6 +21,7 @@ struct dir
 struct locInfo{
     string name;
     string description;
+    string droppedItems[MAX_ITEMS_CARRIED];
     dir nextRoom;
     Location rawLoc;
 };
@@ -31,7 +32,8 @@ struct CharInfo{
     string name;
     bool SAID_KEYWORD, GAVE_TREASURE, WIN_GAME, SEEN_NATIVES, GAVE_BANANA,
     SEEN_I, SEEN_L, SEEN_Q, SEEN_W, SEEN_G, SEEN_H, SEEN_B, OPENED_TRUNK,
-    BROKE_TRUNK, UNLOCKED_CELL, OPENED_CELL, GOT_KEY_EARLY, BONKED, EGG_ONE;
+    BROKE_TRUNK, UNLOCKED_CELL, OPENED_CELL, DROPPED_KNIFE, DROPPED_KEY,
+    DROPPED_TREASURE, GOT_KEY_EARLY, BONKED, EGG_ONE;
 };
 void startGame(CharInfo, locInfo[]);
 void CaptainsQuarters(CharInfo, locInfo[]);
@@ -46,6 +48,7 @@ void Island(CharInfo, locInfo[]);
 void ProcessCommand(CharInfo, locInfo[]);
 void Look(CharInfo, locInfo[], string);
 void Take(CharInfo, locInfo[], string);
+void Drop(CharInfo, locInfo[], string);
 void Give(CharInfo, locInfo[], string);
 void Eat(CharInfo, locInfo[], string);
 void Cut(CharInfo, locInfo[], string);
@@ -56,8 +59,11 @@ void goToLoc(CharInfo, locInfo[], string);
 bool inventoryContains(string[], string);
 bool InventoryFull(string[]);
 void getItem(CharInfo, locInfo[], string);
+void pickupItem(CharInfo, locInfo[], string);
 void removeItem(CharInfo, locInfo[], string);
+void dropItem(CharInfo, locInfo[], string);
 string pigLatin(string);
+void getDroppedItems(CharInfo, locInfo[]);
 
 int main()
 {
@@ -75,6 +81,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     int i;  // Iterator for later
     lInfo[ISLAND].name = "island";
     lInfo[ISLAND].rawLoc = ISLAND;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[ISLAND].droppedItems[i] = "empty";
+    }
     lInfo[ISLAND].description = "You are on the island. There is a tree with ";
     lInfo[ISLAND].description += "ripe bananas to your north, and a gangplank ";
     lInfo[ISLAND].description += "to the ship to the south.";
@@ -86,6 +96,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[ISLAND].nextRoom.down = "no_room";
     lInfo[BANANA_TREE].name = "banana_tree";
     lInfo[BANANA_TREE].rawLoc = BANANA_TREE;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[BANANA_TREE].droppedItems[i] = "empty";
+    }
     lInfo[BANANA_TREE].description = "There is a large banana tree here, and ";
     lInfo[BANANA_TREE].description += "thick forest to all sides except the ";
     lInfo[BANANA_TREE].description += "south.";
@@ -97,6 +111,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[BANANA_TREE].nextRoom.down = "no_room";
     lInfo[UDECK].name = "uDeck";
     lInfo[UDECK].rawLoc = UDECK;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[UDECK].droppedItems[i] = "empty";
+    }
     lInfo[UDECK].description = "There is a wheel at the east end of the ship, ";
     lInfo[UDECK].description += "and a ladder down to the lower deck. The ";
     lInfo[UDECK].description += "captain's quarters are to the west and there ";
@@ -110,6 +128,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[UDECK].nextRoom.down = "lDeck";
     lInfo[WHEEL].name = "wheel";
     lInfo[WHEEL].rawLoc = WHEEL;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[WHEEL].droppedItems[i] = "empty";
+    }
     lInfo[WHEEL].description = "The gorilla still blocks the wheel. The deck ";
     lInfo[WHEEL].description += "is to the west.";
     lInfo[WHEEL].nextRoom.north = "no_room";
@@ -120,6 +142,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[WHEEL].nextRoom.down = "no_room";
     lInfo[LDECK].name = "lDeck";
     lInfo[LDECK].rawLoc = LDECK;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[LDECK].droppedItems[i] = "empty";
+    }
     lInfo[LDECK].description = "There are doors to your north and south, and a";
     lInfo[LDECK].description += " trapdoor below you.";
     lInfo[LDECK].nextRoom.north = "hold";
@@ -130,6 +156,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[LDECK].nextRoom.down = "brig";
     lInfo[GALLEY].name = "galley";
     lInfo[GALLEY].rawLoc = GALLEY;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[GALLEY].droppedItems[i] = "empty";
+    }
     lInfo[GALLEY].description = "There is a parrot in the corner of the room, ";
     lInfo[GALLEY].description += "and a doorway to your north.";
     lInfo[GALLEY].nextRoom.north = "lDeck";
@@ -140,9 +170,12 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[GALLEY].nextRoom.down = "no_room";
     lInfo[BRIG].name = "brig";
     lInfo[BRIG].rawLoc = BRIG;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[BRIG].droppedItems[i] = "empty";
+    }
     lInfo[BRIG].description = "The prisoner is still locked in his cell. There";
-    lInfo[BRIG].description += " is nothing else in the room besides a ladder ";
-    lInfo[BRIG].description += "leading back up.";
+    lInfo[BRIG].description += " is a ladder leading back up.";
     lInfo[BRIG].nextRoom.north = "no_room";
     lInfo[BRIG].nextRoom.south = "no_room";
     lInfo[BRIG].nextRoom.east = "no_room";
@@ -151,6 +184,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[BRIG].nextRoom.down = "no_room";
     lInfo[QUARTERS].name = "quarters";
     lInfo[QUARTERS].rawLoc = QUARTERS;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[QUARTERS].droppedItems[i] = "empty";
+    }
     lInfo[QUARTERS].description = "Inside the captain's quarters, there is a ";
     lInfo[QUARTERS].description += "bed and a table.";
     lInfo[QUARTERS].nextRoom.north = "no_room";
@@ -161,6 +198,10 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[QUARTERS].nextRoom.down = "no_room";
     lInfo[HOLD].name = "hold";
     lInfo[HOLD].rawLoc = HOLD;
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        lInfo[HOLD].droppedItems[i] = "empty";
+    }
     lInfo[HOLD].description = "Inside the cargo hold, there are barrels, ";
     lInfo[HOLD].description += "various tools, and ";
     lInfo[HOLD].nextRoom.north = "no_room";
@@ -185,6 +226,9 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     cInfo.BROKE_TRUNK = false;
     cInfo.UNLOCKED_CELL = false;
     cInfo.OPENED_CELL = false;
+    cInfo.DROPPED_KNIFE = false;
+    cInfo.DROPPED_KEY = false;
+    cInfo.DROPPED_TREASURE = false;
     cInfo.GOT_KEY_EARLY = false;
     cInfo.BONKED = false;
     cInfo.EGG_ONE = false;
@@ -208,11 +252,12 @@ CaptainsQuarters will happen.*/
         }
         else {
             cout << cInfo.playerLocation.description;
-            if (not inventoryContains(cInfo.item, "knife"))
+            if (not inventoryContains(cInfo.item, "knife") and
+            not cInfo.DROPPED_KNIFE)
             {
                 cout << " On the table is a knife.";
             }
-            cout << endl;
+            getDroppedItems(cInfo, lInfo);
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -234,7 +279,8 @@ CargoHold will happen.*/
             if (cInfo.OPENED_TRUNK)
             {
                 if (not cInfo.GAVE_TREASURE and not 
-                inventoryContains(cInfo.item, "treasure"))
+                inventoryContains(cInfo.item, "treasure") and
+                not cInfo.DROPPED_TREASURE)
                 {
                     cout << "an open trunk, with gleaming treasure inside.";
                 }
@@ -251,7 +297,8 @@ CargoHold will happen.*/
             {
                 cout << "a trunk.";
             }
-            cout << " There is a doorway to the south.\n";
+            cout << " There is a doorway to the south.";
+            getDroppedItems(cInfo, lInfo);
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -268,7 +315,8 @@ Galley will happen.*/
         }
         else
         {
-            cout << cInfo.playerLocation.description << endl;
+            cout << cInfo.playerLocation.description;
+            getDroppedItems(cInfo, lInfo);
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -290,12 +338,14 @@ Brig will happen.*/
         }
         else if (cInfo.OPENED_CELL)
         {
-            cout << "The cell is open and empty. There is nothing else in the "
-            << "room besides a ladder leading back up.\n";
+            cout << "The cell is open and empty. There is a ladder leading back"
+            << " up.";
+            getDroppedItems(cInfo, lInfo);
         }
         else
         {
-            cout << cInfo.playerLocation.description << endl;
+            cout << cInfo.playerLocation.description;
+            getDroppedItems(cInfo, lInfo);
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -319,17 +369,18 @@ ShipsWheel will happen.*/
                     cout << "From the wheel you can see the prisoner sitting on"
                     << " the ropes that connect the sails. He seems to know how"
                     << " to work them. If you wish, you could set sail, or "
-                    << "return west to the deck.\n";
+                    << "return west to the deck.";
                 }
                 else
                 {
-                    cout << "There is a wheel here. The deck is to the west.\n";
+                    cout << "There is a wheel here. The deck is to the west.";
                 }
             }
             else
             {
-                cout << cInfo.playerLocation.description << endl;
+                cout << cInfo.playerLocation.description;
             }
+            getDroppedItems(cInfo, lInfo);
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -344,7 +395,7 @@ BananaTree will happen.*/
             cout << " There is one bunch of ripe bananas on the tree within "
             << "reach.";
         }
-        cout << endl;
+        getDroppedItems(cInfo, lInfo);
         ProcessCommand(cInfo, lInfo);
     }
 void UpperDeck(CharInfo cInfo, locInfo lInfo[])
@@ -352,7 +403,8 @@ void UpperDeck(CharInfo cInfo, locInfo lInfo[])
 UpperDeck will happen.*/
 {
     cInfo.playerLocation = lInfo[UDECK];
-    cout << cInfo.playerLocation.description << endl;
+    cout << cInfo.playerLocation.description;
+    getDroppedItems(cInfo, lInfo);
     ProcessCommand(cInfo, lInfo);
 }
 void LowerDeck(CharInfo cInfo, locInfo lInfo[])
@@ -369,7 +421,8 @@ LowerDeck will happen.*/
     }
     else
     {
-        cout << cInfo.playerLocation.description << endl;
+        cout << cInfo.playerLocation.description;
+        getDroppedItems(cInfo, lInfo);
     }
     ProcessCommand(cInfo, lInfo);
 }
@@ -387,7 +440,8 @@ Island will happen.*/
         cInfo.SEEN_I = true;
     }
     else {
-        cout << cInfo.playerLocation.description << endl;
+        cout << cInfo.playerLocation.description;
+        getDroppedItems(cInfo, lInfo);
     }
     ProcessCommand(cInfo, lInfo);
 }
@@ -424,7 +478,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     else if (word_one == "n" or word_one == "e" or word_one == "s" or word_one
     == "w" or word_one == "u" or word_one == "d" or word_one == "north" or
     word_one == "east" or word_one == "south" or word_one == "west" or word_one
-    == "up" or word_one == "down" or word_one == "climb" or word_one == "drop")
+    == "up" or word_one == "down" or word_one == "climb")
     {
         Navigate(cInfo, lInfo, word_one);
     }
@@ -459,6 +513,17 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         else
         {
             Take(cInfo, lInfo, word_two);
+        }
+    }
+    else if (word_one == "drop")
+    {
+        if (one_word)
+        {
+            Navigate(cInfo, lInfo, word_one);
+        }
+        else
+        {
+            Drop(cInfo, lInfo, word_two);
         }
     }
     else if (word_one == "give" or word_one == "present")
@@ -659,31 +724,31 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (rL == ISLAND)
         {
             cout << "You are standing on sand. Good luck getting that out of "
-            << "your shoes.\n";
+            << "your shoes.";
         }
         else if (rL == BANANA_TREE)
         {
-            cout << "There is fertile soil here. Perfect for growing bananas."
-            << endl;
+            cout << "There is fertile soil here. Perfect for growing bananas.";
         }
         else if (rL == UDECK)
         {
             cout << "There is a ladder down to the lower deck. You can't see "
-            << "in from here.\n";
+            << "in from here.";
         }
         else if (rL == LDECK)
         {
-            cout << "There is a trapdoor below you.\n";
+            cout << "There is a trapdoor below you.";
         }
         else if (rL == WHEEL or rL == GALLEY or rL == QUARTERS or rL == BRIG)
         {
-            cout << "The floor here is made up of sturdy wooden boards.\n";
+            cout << "The floor here is made up of sturdy wooden boards.";
         }
         else if (rL == HOLD)
         {
-            cout << "The floor is littered with various tools and coins.\n";
+            cout << "The floor is littered with various tools and coins.";
             // The tools and coins are glued to the floor as a practical joke
         }
+        getDroppedItems(cInfo, lInfo);
     }
     else if (objLook == "gorilla")
     {
@@ -699,7 +764,8 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
     else if (objLook == "knife")
     {
-        if (inventoryContains(cInfo.item, "knife") or rL == QUARTERS)
+        if (inventoryContains(cInfo.item, "knife") or rL == QUARTERS
+        or inventoryContains(cInfo.playerLocation.droppedItems, "knife"))
         {
             cout << "Upon closer inspection, it appears the knife is actually "
             << "incredibly dull. It would be useless as a weapon, but good for "
@@ -712,7 +778,8 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
     else if (objLook == "banana" or objLook == "bananas")
     {
-        if (inventoryContains(cInfo.item, "banana"))
+        if (inventoryContains(cInfo.item, "banana")
+        or inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
         {
             cout << "The bananas are still ripe and ready to eat.\n";
         }
@@ -728,7 +795,8 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
     else if (objLook == "treasure")
     {
-        if (inventoryContains(cInfo.item, "treasure"))
+        if (inventoryContains(cInfo.item, "treasure")
+        or inventoryContains(cInfo.playerLocation.droppedItems, "treasure"))
         {
             cout << "The treasure is very shiny, and small enough to carry "
             << "around.\n";
@@ -739,8 +807,15 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             {
                 if (not cInfo.GAVE_TREASURE)
                 {
-                    cout << "The treasure is very shiny, and small enough to "
-                    << "carry around.\n";
+                    if (not cInfo.DROPPED_TREASURE)
+                    {
+                        cout << "The treasure is very shiny, and small enough "
+                        << "to carry around.\n";
+                    }
+                    else
+                    {
+                        cout << "There is no treasure here.\n";
+                    }
                 }
                 else
                 {
@@ -815,10 +890,10 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     {
         if (rL == HOLD)
         {
-            if (cInfo.OPENED_TRUNK)
+            if (cInfo.OPENED_TRUNK or cInfo.BROKE_TRUNK)
             {
                 if (not inventoryContains(cInfo.item, "treasure") and not
-                cInfo.GAVE_TREASURE)
+                cInfo.GAVE_TREASURE and not cInfo.DROPPED_TREASURE)
                 {
                     cout << "Inside the trunk is a very shiny, very portable "
                     << "treasure.\n";
@@ -879,12 +954,14 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
     else if (objLook == "keys" or objLook == "key")
     {
-        if (inventoryContains(cInfo.item, "key"))
+        if (inventoryContains(cInfo.item, "key")
+        or inventoryContains(cInfo.playerLocation.droppedItems, "key"))
         {
             cout << "The key is golden, with a \"" << cInfo.name[0] << "\" on "
             << "one side.\n";
         }
-        else if (cInfo.SAID_KEYWORD and rL == QUARTERS)
+        else if (cInfo.SAID_KEYWORD and rL == QUARTERS
+        and not cInfo.DROPPED_KEY)
         {
             cout << "The key was under the captain's bed, just like the parrot "
             << "said it would be.\n";
@@ -1018,7 +1095,13 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     }
     else if (objTake == "knife")
     {
-        if (rL == QUARTERS)
+        if (inventoryContains(cInfo.playerLocation.droppedItems, "knife"))
+        {
+            cout << "You got the knife.\n";
+            cInfo.DROPPED_KNIFE = false;
+            pickupItem(cInfo, lInfo, "knife");
+        }
+        else if (rL == QUARTERS and not cInfo.DROPPED_KNIFE)
         {
             cout << "You got the knife.\n";
             getItem(cInfo, lInfo, "knife");
@@ -1031,11 +1114,16 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     }
     else if (objTake == "banana")
     {
-        if (rL == BANANA_TREE)
+        if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+        {
+            cout << "You got a banana.\n";
+            pickupItem(cInfo, lInfo, "banana");
+        }
+        else if (rL == BANANA_TREE)
         {
             if (inventoryContains(cInfo.item, "knife"))
             {
-                cout << "You got the banana.\n";
+                cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
@@ -1054,9 +1142,14 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     {
         if (rL == BANANA_TREE)
         {
-            if (inventoryContains(cInfo.item, "knife"))
+            if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
             {
-                cout << "You got the banana.\n";
+                cout << "You got a banana.\n";
+                pickupItem(cInfo, lInfo, "banana");
+            }
+            else if (inventoryContains(cInfo.item, "knife"))
+            {
+                cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
@@ -1073,7 +1166,13 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     }
     else if (objTake == "treasure")
     {
-        if (rL == HOLD)
+        if (inventoryContains(cInfo.playerLocation.droppedItems, "treasure"))
+        {
+            cout << "You got the treasure.\n";
+            cInfo.DROPPED_TREASURE = false;
+            pickupItem(cInfo, lInfo, "treasure");
+        }
+        else if (rL == HOLD and not cInfo.DROPPED_TREASURE)
         {
             if (not cInfo.GAVE_TREASURE)
             {
@@ -1175,7 +1274,13 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     }
     else if (objTake == "key")
     {
-        if (rL == QUARTERS)
+        if (inventoryContains(cInfo.playerLocation.droppedItems, "key"))
+        {
+            cout << "You got the key.\n";
+            cInfo.DROPPED_KEY = false;
+            pickupItem(cInfo, lInfo, "key");
+        }
+        else if (rL == QUARTERS and not cInfo.DROPPED_KEY)
         {
             if (cInfo.SAID_KEYWORD)
             {
@@ -1261,6 +1366,56 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     {
         cout << "I only understood you as far as wanting to take.\n";
         ProcessCommand(cInfo, lInfo);
+    }
+}
+void Drop(CharInfo cInfo, locInfo lInfo[], string objDrop)
+{
+    if (objDrop == "bananas")
+    {
+        objDrop = "banana";
+    }
+    if (objDrop == "keys")
+    {
+        objDrop = "key";
+    }
+    if (not (objDrop == "banana") and not (objDrop == "knife") and not
+    (objDrop == "key") and not (objDrop == "treasure"))
+    {
+        cout << "I only understood you as far as wanting to drop an item.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (not inventoryContains(cInfo.item, objDrop))
+    {
+        cout << "You don't have a " << objDrop << ".\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (InventoryFull(cInfo.playerLocation.droppedItems))
+    {
+        cout << "There is no room here to drop any more items.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (objDrop == "banana")
+    {
+        cout << "You dropped a banana on the floor.\n";
+        dropItem(cInfo, lInfo, "banana");
+    }
+    else if (objDrop == "knife")
+    {
+        cout << "You dropped the knife on the floor.\n";
+        cInfo.DROPPED_KNIFE = true;
+        dropItem(cInfo, lInfo, "knife");
+    }
+    else if (objDrop == "key")
+    {
+        cout << "You dropped the key on the floor.\n";
+        cInfo.DROPPED_KEY = true;
+        dropItem(cInfo, lInfo, "key");
+    }
+    else if (objDrop == "treasure")
+    {
+        cout << "You dropped the treasure on the floor.\n";
+        cInfo.DROPPED_TREASURE = true;
+        dropItem(cInfo, lInfo, "treasure");
     }
 }
 void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
@@ -1429,6 +1584,7 @@ void Eat(CharInfo cInfo, locInfo lInfo[], string objEat)
         {
             cout << "Through great effort, you manage to swallow the key. Not "
             << "sure why you would, but you did.\n";
+            cInfo.DROPPED_KEY = true;
             removeItem(cInfo, lInfo, "key");
         }
         else
@@ -1533,7 +1689,7 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
         {
             if (not InventoryFull(cInfo.item))
             {
-                cout << "You got the banana.\n";
+                cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
@@ -1541,6 +1697,11 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
                 cout << "Inventory is full.\n";
                 ProcessCommand(cInfo, lInfo);
             }
+        }
+        else if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+        {
+            cout << "The knife looks too dirty to cut food.\n";
+            ProcessCommand(cInfo, lInfo);
         }
         else
         {
@@ -1558,7 +1719,7 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
             }
             else if (not InventoryFull(cInfo.item))
             {
-                cout << "You got the banana.\n";
+                cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
@@ -1932,6 +2093,29 @@ void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
         ProcessCommand(cInfo, lInfo);
     }
 }
+void pickupItem(CharInfo cInfo, locInfo lInfo[], string objPick)
+{
+    int i;
+    int spaceNumber = -1;
+    for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    {
+        if (cInfo.playerLocation.droppedItems[i] == objPick)
+        {
+            spaceNumber = i;
+        }
+    }
+    if (spaceNumber == -1)
+    {
+        cout << "ERROR: No item\n";
+        abort();
+    }
+    else
+    {
+        cInfo.playerLocation.droppedItems[spaceNumber] = "empty";
+        lInfo[cInfo.playerLocation.rawLoc].droppedItems[spaceNumber] = "empty";
+        getItem(cInfo, lInfo, objPick);
+    }
+}
 void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
 {
     int i;
@@ -1952,6 +2136,29 @@ void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
     {
         cInfo.item[spaceNumber] = "empty";
         ProcessCommand(cInfo, lInfo);
+    }
+}
+void dropItem(CharInfo cInfo, locInfo lInfo[], string objPut)
+{
+    int i;
+    int spaceNumber = -1;
+    for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    {
+        if (cInfo.playerLocation.droppedItems[i] == "empty")
+        {
+            spaceNumber = i;
+        }
+    }
+    if (spaceNumber == -1)
+    {
+        cout << "ERROR: droppedItems overflow\n";
+        abort();
+    }
+    else
+    {
+        cInfo.playerLocation.droppedItems[spaceNumber] = objPut;
+        lInfo[cInfo.playerLocation.rawLoc].droppedItems[spaceNumber] = objPut;
+        removeItem(cInfo, lInfo, objPut);
     }
 }
 string pigLatin(string inp)
@@ -1977,6 +2184,37 @@ string pigLatin(string inp)
         return out;
     }
     
+}
+void getDroppedItems(CharInfo cInfo, locInfo lInfo[])
+{
+    int i;
+    int num_items = 0;
+    string floorItems[MAX_ITEMS_CARRIED];
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        if (not (cInfo.playerLocation.droppedItems[i] == "empty"))
+        {
+            floorItems[num_items] = cInfo.playerLocation.droppedItems[i];
+            num_items++;
+        }
+    }
+    switch (num_items)
+    {
+        case 0:
+        cout << endl;
+        break;
+        case 1:
+        cout << " On the ground is a " << floorItems[0] << ".\n";
+        break;
+        case 2:
+        cout << " On the ground is a " << floorItems[0] << " and a "
+        << floorItems[1] << ".\n";
+        break;
+        case 3:
+        cout << " On the ground is a " << floorItems[0] << ", a "
+        << floorItems[1] << ", and a " << floorItems[2] << ".\n";
+        break;
+    }
 }
 
 // Copyright 2020 Christopher Andrade, Lawrence Rede, Amaan Ahmed,

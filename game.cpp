@@ -391,7 +391,7 @@ Island will happen.*/
 void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
 // Separates the command into two strings: word_one and word_two
 {
-    string commands, word_one, word_two;
+    string commands, word_one, word_two, parrot_resp, pig_lat;
     int spaceholder;
     bool one_word = false;
     Location rL = cInfo.playerLocation.rawLoc;
@@ -408,7 +408,8 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         one_word = true;
     }
     spaceholder = word_two.find(" ");
-    if (not (spaceholder == -1))
+    if (not (spaceholder == -1) and not (cInfo.playerLocation.rawLoc == galley
+    and not cInfo.SAID_KEYWORD))
     {
         cout << "Please enter up to two words at a time.\n";
         ProcessCommand(cInfo, lInfo);
@@ -587,14 +588,24 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     }
     else if (cInfo.playerLocation.rawLoc == galley and not cInfo.SAID_KEYWORD)
     {
+        parrot_resp = commands;
         if (one_word)
         {
             cout << "The parrot replies: \"" << pigLatin(word_one) << "\".\n";
         }
         else
         {
-            cout << "The parrot replies: \"" << pigLatin(word_one) << " "
-            << pigLatin(word_two) << "\".\n";
+            pig_lat = "";
+            cout << "The parrot replies: \"";
+            while (not (parrot_resp.find(" ") == -1))  // While there is a space
+            // meaning there are more words to parse
+            {
+                spaceholder = parrot_resp.find(" ");
+                pig_lat += pigLatin(parrot_resp.substr(0, spaceholder)) + " ";
+                parrot_resp.erase(0, spaceholder+1);
+            }
+            pig_lat += pigLatin(parrot_resp);
+            cout << pig_lat << "\".\n";
         }
         ProcessCommand(cInfo, lInfo);
     }

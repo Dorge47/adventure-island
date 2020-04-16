@@ -1,5 +1,5 @@
 // Group 4: Lawrence Rede, Christopher Andrade, Amaan Ahmed, Ivan Dorantes,
-// Karlee Wilkinson, Ernest
+// Karlee Wilkinson
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -781,7 +781,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (inventoryContains(cInfo.item, "banana")
         or inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
         {
-            cout << "The bananas are still ripe and ready to eat.\n";
+            cout << "The banana is still ripe and ready to eat.\n";
         }
         else if (rL == BANANA_TREE)
         {

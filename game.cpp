@@ -5,6 +5,8 @@
 // Helps with pig latin
 #include <algorithm>
 // Used to make user input lowercase
+#include <fstream>
+// Used to do save files
 using namespace std;
 const int MAX_ITEMS_CARRIED=3;
 // Should be able to be changed and still work properly
@@ -40,7 +42,7 @@ struct CharInfo{
     GOT_KEY_EARLY, BONKED, EGG_ONE;
     // Bools make keeping track of game events easier
 };
-void startGame(CharInfo, locInfo[]);
+void startNewGame(CharInfo, locInfo[]);
 void CaptainsQuarters(CharInfo, locInfo[]);
 void CargoHold(CharInfo, locInfo[]);
 void Galley(CharInfo, locInfo[]);
@@ -69,6 +71,11 @@ void removeItem(CharInfo, locInfo[], string);
 void dropItem(CharInfo, locInfo[], string);
 string pigLatin(string);
 void getDroppedItems(CharInfo, locInfo[]);
+void saveData(CharInfo, locInfo[]);
+string boolNum(bool);
+void loadData(CharInfo, locInfo[]);
+bool numBool(string);
+Location printRawLoc(string);
 
 int main()
 // Sets up CharInfo and locInfo objects, gets the player's name, and starts the
@@ -81,10 +88,10 @@ int main()
     cout << endl;
     cout<<"You have just awakened on a strange island with a terrible headache."
     <<" You can't remember anything about yourself or where you are.\n\n";
-    startGame(cInfo, room);
+    startNewGame(cInfo, room);
     return 0;
 }
-void startGame(CharInfo cInfo, locInfo lInfo[]){
+void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     // Sets the names, rawLocs, and descriptions for every room, as well as
     // using a "for" loop to set up the droppedItems arrays
     int i;  // Iterator for later
@@ -795,6 +802,15 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         << "\"give\", \"drop\", \"cut\", and \"eat\", as well as several "
         << "synonyms for those words.\n";
         ProcessCommand(cInfo, lInfo);
+    }
+    else if (word_one == "save" and one_word)
+    {
+        saveData(cInfo, lInfo);
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (word_one == "load" and one_word)
+    {
+        loadData(cInfo, lInfo);
     }
     else
     // The player entered an unknown command
@@ -2556,6 +2572,315 @@ void getDroppedItems(CharInfo cInfo, locInfo lInfo[])
         cout << " On the ground is a " << floorItems[0] << ", a "
         << floorItems[1] << ", and a " << floorItems[2] << ".\n";
         break;
+    }
+}
+void saveData(CharInfo cInfo, locInfo lInfo[])
+{
+    int i;  // Iterator
+    string out;
+    ofstream saveFile;
+    saveFile.open("save0", std::ofstream::out | std::ofstream::trunc);
+    out = cInfo.name + "\n";  // 1
+    out += cInfo.playerLocation.name + "\n";  // 2
+    out += to_string(MAX_ITEMS_CARRIED) + "\n";  // 3
+    out += boolNum(cInfo.SAID_KEYWORD) + "\n";  // 4
+    out += boolNum(cInfo.GAVE_TREASURE) + "\n";  // 5
+    out += boolNum(cInfo.SEEN_NATIVES) + "\n";  // 6
+    out += boolNum(cInfo.GAVE_BANANA) + "\n";  // 7
+    out += boolNum(cInfo.SEEN_I) + "\n";  // 8
+    out += boolNum(cInfo.SEEN_L) + "\n";  // 9
+    out += boolNum(cInfo.SEEN_Q) + "\n";  // 10
+    out += boolNum(cInfo.SEEN_W) + "\n";  // 11
+    out += boolNum(cInfo.SEEN_G) + "\n";  // 12
+    out += boolNum(cInfo.SEEN_H) + "\n";  // 13
+    out += boolNum(cInfo.SEEN_B) + "\n";  // 14
+    out += boolNum(cInfo.OPENED_TRUNK) + "\n";  // 15
+    out += boolNum(cInfo.BROKE_TRUNK) + "\n";  // 16
+    out += boolNum(cInfo.UNLOCKED_CELL) + "\n";  // 17
+    out += boolNum(cInfo.OPENED_CELL) + "\n";  // 18
+    out += boolNum(cInfo.DROPPED_KNIFE) + "\n";  // 19
+    out += boolNum(cInfo.DROPPED_KEY) + "\n";  // 20
+    out += boolNum(cInfo.DROPPED_TREASURE) + "\n";  // 21
+    out += boolNum(cInfo.GOT_KEY_EARLY) + "\n";  // 22
+    out += boolNum(cInfo.BONKED) + "\n";  // 23
+    out += boolNum(cInfo.EGG_ONE) + "\n";  // 24
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += cInfo.item[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[ISLAND].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*2
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[BANANA_TREE].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*3
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[UDECK].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*4
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[WHEEL].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*5
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[LDECK].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*6
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[GALLEY].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*7
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[BRIG].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*8
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[QUARTERS].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*9
+    for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    {
+        out += lInfo[HOLD].droppedItems[i] + "\n";
+    }  // 24 + MAX_ITEMS_CARRIED*10
+    saveFile << out;
+    saveFile.close();
+    cout << "Data saved to file \"save0\".\n";
+}
+string boolNum(bool boolToNum)
+{
+    string numOfBool;
+    if (boolToNum)
+    {
+        numOfBool = "1";
+    }
+    else
+    {
+        numOfBool = "0";
+    }
+    return numOfBool;
+}
+void loadData(CharInfo cInfo, locInfo lInfo[])
+{
+    int tempMax, lineHolder, i;
+    string line, entireSave;
+    Location rL;
+    ifstream saveFile("save0");
+    if (saveFile.is_open())
+    {
+        while (getline(saveFile, line))
+        {
+            entireSave += line + "\n";
+        }
+        saveFile.close();
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.name = entireSave.substr(0, lineHolder);
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        rL = printRawLoc(entireSave.substr(0, lineHolder));
+        cInfo.playerLocation = lInfo[rL];
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        tempMax = stoi(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        if (not (tempMax == MAX_ITEMS_CARRIED))
+        {
+            cout << "You have loaded a save file that is not compatible with "
+            << "this version of the game. There is no way to recover from "
+            << "this.\n";
+            abort();
+        }
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SAID_KEYWORD = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.GAVE_TREASURE = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_NATIVES = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.GAVE_BANANA = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_I = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_L = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_Q = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_W = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_G = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_H = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.SEEN_B = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.OPENED_TRUNK = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.BROKE_TRUNK = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.UNLOCKED_CELL = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.OPENED_CELL = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.DROPPED_KNIFE = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.DROPPED_KEY = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.DROPPED_TREASURE = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.GOT_KEY_EARLY = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.BONKED = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        lineHolder = entireSave.find_first_of("\n");
+        cInfo.EGG_ONE = numBool(entireSave.substr(0, lineHolder));
+        entireSave.erase(0, lineHolder + 1);
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            cInfo.item[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[ISLAND].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[BANANA_TREE].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[UDECK].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[WHEEL].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[LDECK].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[GALLEY].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[BRIG].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[QUARTERS].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+        {
+            lineHolder = entireSave.find_first_of("\n");
+            lInfo[HOLD].droppedItems[i] = entireSave.substr(0, lineHolder);
+            entireSave.erase(0, lineHolder + 1);
+        }
+        cout << "File loaded successfully.\n\n";
+        goToLoc(cInfo, lInfo, cInfo.playerLocation.name);
+    }
+    else
+    {
+        cout << "Unable to open file.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+}
+bool numBool(string numToBool)
+{
+    if (numToBool == "1")
+    {
+        return true;
+    }
+    else if (numToBool == "0")
+    {
+        return false;
+    }
+    else
+    {
+        cout << "ERROR: Missing bool\n";
+        abort();
+    }
+}
+Location printRawLoc(string locToPrint)
+{
+    if (locToPrint == "island")
+    {
+        return ISLAND;
+    }
+    else if (locToPrint == "banana_tree")
+    {
+        return BANANA_TREE;
+    }
+    else if (locToPrint == "uDeck")
+    {
+        return UDECK;
+    }
+    else if (locToPrint == "wheel")
+    {
+        return WHEEL;
+    }
+    else if (locToPrint == "lDeck")
+    {
+        return LDECK;
+    }
+    else if (locToPrint == "galley")
+    {
+        return GALLEY;
+    }
+    else if (locToPrint == "brig")
+    {
+        return BRIG;
+    }
+    else if (locToPrint == "quarters")
+    {
+        return QUARTERS;
+    }
+    else if (locToPrint == "hold")
+    {
+        return HOLD;
+    }
+    else
+    {
+        cout << "ERROR: invalid location on line 3 of save0\n";
+        abort();
     }
 }
 

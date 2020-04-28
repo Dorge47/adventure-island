@@ -2,12 +2,15 @@
 // Karlee Wilkinson
 #include <iostream>
 #include <string>
+// Helps with pig latin
 #include <algorithm>
+// Used to make user input lowercase
 using namespace std;
 const int MAX_ITEMS_CARRIED=3;
-const string VOWELS = "AEIOUYaeiouy";
+// Should be able to be changed and still work properly
+const string VOWELS = "AEIOUYaeiouy";  // Used in pig latin function
 enum Location 
-//no_room should always be the last room
+// no_room should always be the last room
 {QUARTERS,HOLD,GALLEY,BRIG,WHEEL,BANANA_TREE,UDECK,LDECK,ISLAND,NO_ROOM};
 struct dir
 {
@@ -22,18 +25,20 @@ struct locInfo{
     string name;
     string description;
     string droppedItems[MAX_ITEMS_CARRIED];
+    // Contains any items dropped in the room
     dir nextRoom;
     Location rawLoc;
+    // Makes checking location easier
 };
 struct CharInfo{
-    int itemsAmnt;
     string item[MAX_ITEMS_CARRIED];
     locInfo playerLocation;
     string name;
-    bool SAID_KEYWORD, GAVE_TREASURE, WIN_GAME, SEEN_NATIVES, GAVE_BANANA,
-    SEEN_I, SEEN_L, SEEN_Q, SEEN_W, SEEN_G, SEEN_H, SEEN_B, OPENED_TRUNK,
-    BROKE_TRUNK, UNLOCKED_CELL, OPENED_CELL, DROPPED_KNIFE, DROPPED_KEY,
-    DROPPED_TREASURE, GOT_KEY_EARLY, BONKED, EGG_ONE;
+    bool SAID_KEYWORD, GAVE_TREASURE, SEEN_NATIVES, GAVE_BANANA, SEEN_I, SEEN_L,
+    SEEN_Q, SEEN_W, SEEN_G, SEEN_H, SEEN_B, OPENED_TRUNK, BROKE_TRUNK,
+    UNLOCKED_CELL, OPENED_CELL, DROPPED_KNIFE, DROPPED_KEY, DROPPED_TREASURE,
+    GOT_KEY_EARLY, BONKED, EGG_ONE;
+    // Bools make keeping track of game events easier
 };
 void startGame(CharInfo, locInfo[]);
 void CaptainsQuarters(CharInfo, locInfo[]);
@@ -66,6 +71,8 @@ string pigLatin(string);
 void getDroppedItems(CharInfo, locInfo[]);
 
 int main()
+// Sets up CharInfo and locInfo objects, gets the player's name, and starts the
+// game
 {
     CharInfo cInfo;
     locInfo room[NO_ROOM];
@@ -78,6 +85,8 @@ int main()
     return 0;
 }
 void startGame(CharInfo cInfo, locInfo lInfo[]){
+    // Sets the names, rawLocs, and descriptions for every room, as well as
+    // using a "for" loop to set up the droppedItems arrays
     int i;  // Iterator for later
     lInfo[ISLAND].name = "island";
     lInfo[ISLAND].rawLoc = ISLAND;
@@ -204,6 +213,9 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     }
     lInfo[HOLD].description = "Inside the cargo hold, there are barrels, ";
     lInfo[HOLD].description += "various tools, and ";
+    // Description cut short intentionally, the rest is appended later so we can
+    // modify it based on whether the trunk is open, and if it is, whether it
+    // contains treasure
     lInfo[HOLD].nextRoom.north = "no_room";
     lInfo[HOLD].nextRoom.south = "lDeck";
     lInfo[HOLD].nextRoom.east = "no_room";
@@ -211,10 +223,13 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[HOLD].nextRoom.up = "no_room";
     lInfo[HOLD].nextRoom.down = "no_room";
     cInfo.SAID_KEYWORD = false;
+    // Keyword for the parrot
     cInfo.GAVE_TREASURE = false;
-    cInfo.WIN_GAME = false;
+    // Has the player given the treasure to the natives
     cInfo.SEEN_NATIVES = false;
+    // Has the player tried to leave the ship
     cInfo.GAVE_BANANA = false;
+    // Has the player given the banana to the gorilla
     cInfo.SEEN_I = false;
     cInfo.SEEN_L = false;
     cInfo.SEEN_Q = false;
@@ -222,21 +237,34 @@ void startGame(CharInfo cInfo, locInfo lInfo[]){
     cInfo.SEEN_G = false;
     cInfo.SEEN_H = false;
     cInfo.SEEN_B = false;
+    // These are used to determine whether we should print the full description
+    // of a room or the shortened version
     cInfo.OPENED_TRUNK = false;
+    // Has the player opened the treasure trunk
     cInfo.BROKE_TRUNK = false;
+    // Easter egg
     cInfo.UNLOCKED_CELL = false;
     cInfo.OPENED_CELL = false;
+    // Both of these should do the same thing, fix later
     cInfo.DROPPED_KNIFE = false;
     cInfo.DROPPED_KEY = false;
     cInfo.DROPPED_TREASURE = false;
+    // Unlike the banana, these items cannot be gotten again from their original
+    // location after they've been dropped, so we need to keep track of them to
+    // avoid accidental duplicates
     cInfo.GOT_KEY_EARLY = false;
+    // Easter egg
     cInfo.BONKED = false;
+    // Easter egg
     cInfo.EGG_ONE = false;
+    // Easter egg, but more official
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
     {
         cInfo.item[i] = "empty";
     }
+    // Set up the inventory array
     Island(cInfo, lInfo);
+    // Move the player to the island and begin the game
 }
 void CaptainsQuarters(CharInfo cInfo, locInfo lInfo[])
 /*the function in which all of the player's interaction with the
@@ -250,14 +278,20 @@ CaptainsQuarters will happen.*/
             <<"the captain.\n";
             cInfo.SEEN_Q = true;
         }
-        else {
+        else
+        {
             cout << cInfo.playerLocation.description;
             if (not inventoryContains(cInfo.item, "knife") and
             not cInfo.DROPPED_KNIFE)
+            // If the knife is not on the player and has not been dropped
+            // somewhere else, it must be on the table
             {
                 cout << " On the table is a knife.";
             }
             getDroppedItems(cInfo, lInfo);
+            // Append dropped items in the room to the room's description. Not
+            // needed for the initial description, as a room cannot have dropped
+            // items before it has been visisted
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -281,10 +315,12 @@ CargoHold will happen.*/
                 if (not cInfo.GAVE_TREASURE and not 
                 inventoryContains(cInfo.item, "treasure") and
                 not cInfo.DROPPED_TREASURE)
+                // The treasure cannot be anywhere except for inside the trunk
                 {
                     cout << "an open trunk, with gleaming treasure inside.";
                 }
                 else
+                // The treasure is somewhere else
                 {
                     cout << "an empty trunk.";
                 }
@@ -294,6 +330,7 @@ CargoHold will happen.*/
                 cout << "an empty trunk with a hole in the top.";
             }
             else
+            // The trunk has not been opened
             {
                 cout << "a trunk.";
             }
@@ -337,6 +374,7 @@ Brig will happen.*/
             cInfo.SEEN_B = true;
         }
         else if (cInfo.OPENED_CELL)
+        // The prisoner has already been freed and left the room
         {
             cout << "The cell is open and empty. There is a ladder leading back"
             << " up.";
@@ -354,7 +392,8 @@ void ShipsWheel(CharInfo cInfo, locInfo lInfo[])
 ShipsWheel will happen.*/
     {
         cInfo.playerLocation = lInfo[WHEEL];
-        if (not cInfo.SEEN_W) {
+        if (not cInfo.SEEN_W)
+        {
             cout<<"There is a large gorilla by the ship's wheel. This gorilla "
             <<"is hostile. You can't touch the wheel. The deck is to the west."
             <<endl;
@@ -363,8 +402,10 @@ ShipsWheel will happen.*/
         else
         {
             if (cInfo.GAVE_BANANA)
+            // The gorilla is gone
             {
                 if (cInfo.OPENED_CELL)
+                // The prisoner has been freed
                 {
                     cout << "From the wheel you can see the prisoner sitting on"
                     << " the ropes that connect the sails. He seems to know how"
@@ -372,6 +413,7 @@ ShipsWheel will happen.*/
                     << "return west to the deck.";
                 }
                 else
+                // The gorilla is gone but the prisoner is still in the brig
                 {
                     cout << "There is a wheel here. The deck is to the west.";
                 }
@@ -391,6 +433,7 @@ BananaTree will happen.*/
         cInfo.playerLocation = lInfo[BANANA_TREE];
         cout << cInfo.playerLocation.description;
         if (not inventoryContains(cInfo.item, "banana"))
+        // The player does not have a banana in their inventory
         {
             cout << " There is one bunch of ripe bananas on the tree within "
             << "reach.";
@@ -439,39 +482,119 @@ Island will happen.*/
         <<"with a gangplank to the shore.\n";
         cInfo.SEEN_I = true;
     }
-    else {
+    else
+    {
         cout << cInfo.playerLocation.description;
         getDroppedItems(cInfo, lInfo);
     }
     ProcessCommand(cInfo, lInfo);
 }
 void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
-// Separates the command into two strings: word_one and word_two
+// Separates the command into two strings, word_one and word_two, then calls the
+// appropriate functions to handle the command
 {
     string commands, word_one, word_two, parrot_resp, pig_lat;
+    // "commands" stores the player's input commands, word_one is the first word
+    // of the input, word_two is the rest of the input, "parrot_resp" is a
+    // 1-to-1 copy of "commands" used for pig latin processing, and "pig_lat"
+    // stores the pig latin response before we send it to the player
     int spaceholder;
+    // Used to store the location of a space character in the case of multiple
+    // words, so we can split "commands" into "word_one" and "word_two"
     bool one_word = false;
+    // Stores whether the command contains only one word
     Location rL = cInfo.playerLocation.rawLoc;
+    // Shorthand so that we don't have to keep writing out
+    // "cInfo.playerLocation.rawLoc"
     cout << endl;
+    // Makes the spacing look better
     getline(cin, commands);
     cout << endl;
+    // Makes the spacing look better
     transform(commands.begin(), commands.end(), commands.begin(), ::tolower);
-    // Make all input lowercase
+    // Makes all input lowercase
     spaceholder = commands.find(" ");
     word_one = commands.substr(0,spaceholder);
     word_two = commands.substr(spaceholder+1);
     if (spaceholder == -1)
+    // C++ overflows the result of a find() call to -1 if nothing was found, so
+    // if spaceholder is -1 then there was no space found and the command was
+    // only one word
     {
         one_word = true;
     }
     spaceholder = word_two.find(" ");
-    if (not (spaceholder == -1) and not (cInfo.playerLocation.rawLoc == GALLEY
-    and not cInfo.SAID_KEYWORD))
+    // Used to find out if there are more than two words
+    if (word_one == "quit" or word_one == "exit" or word_one == "close")
+    {
+        cout << "Goodbye.\n";
+        // ProcessCommand() is missing from this response, so the game will end
+        // as soon as it is given
+    }
+    else if ((word_one == "polly" or word_one == "hello" or
+    word_one == "cracker" or word_one == "hi") and
+    cInfo.playerLocation.rawLoc == GALLEY and not cInfo.SAID_KEYWORD and not
+    cInfo.GOT_KEY_EARLY)
+    // The player is in the galley and hadn't said a keyword yet, but just did
+    {
+        cout << "The parrot lets out a delighted squawk and replies \"You "
+        << "figured it out! In exchange for solving my puzzle, I'll tell you "
+        << "where the captain hides the key to the brig: It's under the bed in "
+        << "the Captain's Quarters. Good luck!\"\n";
+        cInfo.SAID_KEYWORD = true;
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (cInfo.playerLocation.rawLoc == GALLEY and not cInfo.SAID_KEYWORD
+    and not cInfo.GOT_KEY_EARLY)
+    // The player said something in front of the parrot that wasn't a keyword
+    {
+        parrot_resp = commands;
+        if (one_word)
+        // Easy peasy, just repeat the one word in pig latin
+        {
+            cout << "The parrot replies: \"" << pigLatin(word_one) << "\".\n";
+        }
+        else
+        // NOT EASY PEASY VERY MUCH NOT EASY PEASY (the player said more than
+        // one word, each of which must be converted to pig latin and repeated)
+        {
+            pig_lat = "";
+            cout << "The parrot replies: \"";
+            // We'll append the rest of the response later
+            while (not (parrot_resp.find(" ") == -1))  // While there is a space
+            // meaning there are more words to parse
+            {
+                spaceholder = parrot_resp.find(" ");
+                // Find the space in parrot_resp. Doesn't interfere with later
+                // use of spaceholder since anything else that would use it
+                // would prevent the else if statement on line 543 from running
+                pig_lat += pigLatin(parrot_resp.substr(0, spaceholder)) + " ";
+                // Take the substring from the start of parrot_resp to the first
+                // space (i.e. the first word of parrot_resp), convert it to pig
+                // latin, and append the pig latin word plus a space to pig_lat
+                parrot_resp.erase(0, spaceholder+1);
+                // Remove from parrot_resp the word that we just processed, as
+                // well as the space that followed it
+            }
+            // The while loop stops before the last word is processed, which
+            // lets us process the last word here without adding a space to the
+            // end like we have with the other words
+            pig_lat += pigLatin(parrot_resp);
+            // Convert the last word to pig latin and add it to pig_lat
+            cout << pig_lat << "\".\n";
+            // Send pig_lat and the end of the response
+        }
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (not (spaceholder == -1))
+    // There are more than two words and the player is not doing the parrot
+    // puzzle, which is the only place in the game we allow more than two words
     {
         cout << "Please enter up to two words at a time.\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (word_one == "go" or word_one == "move" or word_one == "walk")
+    // Navigation commands
     {
         Navigate(cInfo, lInfo, word_two);
     }
@@ -479,17 +602,23 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     == "w" or word_one == "u" or word_one == "d" or word_one == "north" or
     word_one == "east" or word_one == "south" or word_one == "west" or word_one
     == "up" or word_one == "down" or word_one == "climb")
+    // Raw directions trigger the navigation command
     {
         Navigate(cInfo, lInfo, word_one);
     }
     else if (word_one == "look" or word_one == "inspect")
+    // Look commands
     {
         if (one_word or word_two == "room" or word_two == "around")
+        // The player typed "look room" or "look around" or just "look"
         {
             goToLoc(cInfo, lInfo, cInfo.playerLocation.name);
+            // Gets the room description by placing the player at their current
+            // location and triggering that room's function
         }
         else if (word_two == "ladder" and cInfo.playerLocation.rawLoc == LDECK
         and not cInfo.BONKED)
+        // Easter egg :)
         {
             cout << "You turn around and smack your head into the ladder, "
             << "forgetting how close you were to it. That's gonna leave a "
@@ -498,12 +627,16 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             ProcessCommand(cInfo, lInfo);
         }
         else
+        // The player wants to look at something specific, or typed random
+        // gibberish after "look"
         {
             Look(cInfo, lInfo, word_two);
             ProcessCommand(cInfo, lInfo);
         }
     }
-    else if (word_one == "take" or word_one == "get" or word_one == "grab")
+    else if (word_one == "take" or word_one == "get" or word_one == "grab"
+    or word_one == "pickup")
+    // Take commands
     {
         if (one_word)
         {
@@ -527,6 +660,8 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "give" or word_one == "present")
+    // Give commands, used to give the treasure to the natives or a banana to
+    // the gorilla
     {
         if (one_word)
         {
@@ -539,6 +674,8 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "eat")
+    // The player can eat the banana, or the key if they've already freed the
+    // prisoner
     {
         if (one_word)
         {
@@ -552,6 +689,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "cut")
+    // The player can cut a banana from the banana tree
     {
         if (one_word)
         {
@@ -559,6 +697,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             ProcessCommand(cInfo, lInfo);
         }
         else if (not inventoryContains(cInfo.item, "knife"))
+        // The player does not have the knife and cannot cut anything
         {
             cout << "You have nothing with which to cut the " << word_two
             << ".\n";
@@ -570,6 +709,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "unlock")
+    // The player can unlock the prisoner's cell if they have the key
     {
         if (one_word)
         {
@@ -582,6 +722,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "open")
+    // The player can open the prisoner's cell or the treasure trunk
     {
         if (one_word)
         {
@@ -594,12 +735,17 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
         }
     }
     else if (word_one == "sail")
+    // Ends the game if the player gave the gorilla a banana and freed the
+    // prisoner from the brig
     {
         if (rL == WHEEL)
+        // The player is at the wheel
         {
             if (cInfo.GAVE_BANANA)
+            // The gorilla is gone
             {
                 if (cInfo.OPENED_CELL)
+                // The prisoner is free
                 {
                     cout << "Eager to leave the island behind, you and the "
                     << "former prisoner get ready to set sail. As the anchor is"
@@ -621,64 +767,32 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
                         << "among other things. You're thankful to leave.\n\n"
                         << "END\n\n";
                     }
+                    // ProcessCommand() is missing from all of these responses,
+                    // so the game will end as soon as one of them is given
                 }
                 else
+                // The gorilla is gone but the prisoner has not been freed
                 {
                     cout << "You have no idea how to sail a ship.\n";
                     ProcessCommand(cInfo, lInfo);
                 }
             }
             else
+            // The gorilla is still blocking the wheel
             {
                 cout << "The gorilla blocks the wheel.\n";
                 ProcessCommand(cInfo, lInfo);
             }
         }
         else
+        // The player is not at the wheel
         {
             cout << "You can't sail the ship from here.\n";
             ProcessCommand(cInfo, lInfo);
         }
     }
-    else if ((word_one == "polly" or word_one == "hello" or
-    word_one == "cracker" or word_one == "hi") and
-    cInfo.playerLocation.rawLoc == GALLEY and not cInfo.SAID_KEYWORD)
-    {
-        cout << "The parrot lets out a delighted squawk and replies \"You "
-        << "figured it out! In exchange for solving my puzzle, I'll tell you "
-        << "where the captain hides the key to the brig: It's under the bed in "
-        << "the Captain's Quarters. Good luck!\"\n";
-        cInfo.SAID_KEYWORD = true;
-        ProcessCommand(cInfo, lInfo);
-    }
-    else if (word_one == "quit" or word_one == "exit" or word_one == "close")
-    {
-        cout << "Goodbye.\n";
-    }
-    else if (cInfo.playerLocation.rawLoc == GALLEY and not cInfo.SAID_KEYWORD)
-    {
-        parrot_resp = commands;
-        if (one_word)
-        {
-            cout << "The parrot replies: \"" << pigLatin(word_one) << "\".\n";
-        }
-        else
-        {
-            pig_lat = "";
-            cout << "The parrot replies: \"";
-            while (not (parrot_resp.find(" ") == -1))  // While there is a space
-            // meaning there are more words to parse
-            {
-                spaceholder = parrot_resp.find(" ");
-                pig_lat += pigLatin(parrot_resp.substr(0, spaceholder)) + " ";
-                parrot_resp.erase(0, spaceholder+1);
-            }
-            pig_lat += pigLatin(parrot_resp);
-            cout << pig_lat << "\".\n";
-        }
-        ProcessCommand(cInfo, lInfo);
-    }
     else
+    // The player entered an unknown command
     {
         cout << "I didn't recognize that command. Please try again or say \""
         <<"help\" for available commands.\n";
@@ -686,9 +800,11 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     }
 }
 void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
+// Look function gets passed cInfo and lInfo so we can see information about the
+// player, and objLook is what the player is trying to look at
 {
-    // Shorten location so we don't have to use "cInfo.playerLocation.rawLoc"
     Location rL = cInfo.playerLocation.rawLoc;
+    // Shorten location so we don't have to use "cInfo.playerLocation.rawLoc"
     if (objLook == "up")
     {
         if (rL == ISLAND or rL == BANANA_TREE)
@@ -749,29 +865,41 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             // The tools and coins are glued to the floor as a practical joke
         }
         getDroppedItems(cInfo, lInfo);
+        // The player should see the items they've dropped in the room if they
+        // look down
     }
     else if (objLook == "gorilla")
     {
         if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // The player is at the wheel but has not given the gorilla a banana, so
+        // the gorilla is still blocking the wheel
         {
             cout << "The gorilla looks hostile. Probably best to leave it "
             << "alone.\n";
         }
         else
+        // The player isn't at the wheel, or has already given the gorilla a
+        // banana
         {
             cout << "The gorilla isn't here.\n";
         }
     }
     else if (objLook == "knife")
     {
-        if (inventoryContains(cInfo.item, "knife") or rL == QUARTERS
-        or inventoryContains(cInfo.playerLocation.droppedItems, "knife"))
+        if (inventoryContains(cInfo.item, "knife") or (rL == QUARTERS and
+        not cInfo.DROPPED_KNIFE) or
+        inventoryContains(cInfo.playerLocation.droppedItems, "knife"))
+        // The player has the knife in their inventory, or they're in the
+        // quarters and haven't dropped the knife elsewhere, or they've dropped
+        // the knife on the floor of the room they're in
         {
             cout << "Upon closer inspection, it appears the knife is actually "
             << "incredibly dull. It would be useless as a weapon, but good for "
             << "cutting.\n";
         }
         else
+        // The player doesn't have the knife, and the knife isn't in the same
+        // room as the player
         {
             cout << "There is no knife here.\n";
         }
@@ -780,15 +908,21 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     {
         if (inventoryContains(cInfo.item, "banana")
         or inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+        // The player has a banana, or they've dropped one on the floor of the
+        // room they're in
         {
             cout << "The banana is still ripe and ready to eat.\n";
         }
         else if (rL == BANANA_TREE)
+        // The player doesn't have a banana nor have they dropped one in the
+        // room they're in, but they're at the banana tree
         {
             cout << "There is one bunch of ripe bananas on the tree within "
             << "reach.\n";
         }
         else
+        // The player doesn't have a banana, there aren't any in the room
+        // they're in, and they're not at the banana tree
         {
             cout << "There are no bananas here.\n";
         }
@@ -797,24 +931,32 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     {
         if (inventoryContains(cInfo.item, "treasure")
         or inventoryContains(cInfo.playerLocation.droppedItems, "treasure"))
+        // The player has the treasure, or they've dropped the treasure on the
+        // floor of the room they're in
         {
             cout << "The treasure is very shiny, and small enough to carry "
             << "around.\n";
         }
         else if (rL == HOLD)
+        // The player doesn't have the treasure and it's not on the floor of the
+        // room they're in, but they are in the cargo hold
         {
             if (cInfo.OPENED_TRUNK or cInfo.BROKE_TRUNK)
+            // The trunk is open
             {
                 if (not cInfo.GAVE_TREASURE)
+                // The player has not given the treasure to the natives
                 {
                     if (not cInfo.DROPPED_TREASURE)
+                    // The player has not dropped the treasure in another room
                     {
                         cout << "The treasure is very shiny, and small enough "
                         << "to carry around.\n";
                     }
                     else
+                    // The player has dropped the treasure in another room
                     {
-                        cout << "There is no treasure here.\n";
+                        cout << "The treasure is not here.\n";
                     }
                 }
                 else
@@ -824,11 +966,13 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
                 }
             }
             else
+            // The trunk has not been opened
             {
                 cout << "The trunk may have treasure, but it's closed.\n";
             }
         }
         else
+        // The player is not in the cargo hold
         {
             cout << "There is no treasure here.\n";
         }
@@ -848,20 +992,29 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         else if (rL == BRIG)
         {
             if (cInfo.OPENED_CELL)
+            // The player has freed the prisoner
             {
                 cout << "The cell door is open.\n";
             }
             else if (cInfo.UNLOCKED_CELL)
+            // The player has unlocked the cell door but it is still closed. Fix
+            // later
             {
                 cout << "The cell door is still closed.\n";
             }
             else
+            // The player has not unlocked the cell
             {
                 cout << "The cell door is still locked.\n";
             }
         }
-        else {
+        else
+        // The player is not in the captain's quarters, the galley, the hold,
+        // the lower deck, nor the brig
+        {
             cout << "There are no " << objLook << "s here.\n";
+            // Clever way to repeat whichever word the player used, door or
+            // doorway
         }
     }
     else if (objLook == "cell")
@@ -869,19 +1022,23 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (rL == BRIG)
         {
             if (cInfo.OPENED_CELL)
+            // The player has freed the prisoner
             {
                 cout << "The cell door is open.\n";
             }
             else if (cInfo.UNLOCKED_CELL)
+            // The player unlocked the cell but didn't open it. Fix later
             {
                 cout << "The cell door is still closed.\n";
             }
             else
+            // The player hasn't unlocked the cell
             {
                 cout << "The cell door is still locked.\n";
             }
         }
         else
+        // The player is not in the brig
         {
             cout << "There is no cell here.\n";
         }
@@ -891,23 +1048,30 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (rL == HOLD)
         {
             if (cInfo.OPENED_TRUNK or cInfo.BROKE_TRUNK)
+            // The player has opened the trunk
             {
                 if (not inventoryContains(cInfo.item, "treasure") and not
                 cInfo.GAVE_TREASURE and not cInfo.DROPPED_TREASURE)
+                // The player does not have the treasure, hasn't given it to the
+                // natives, and hasn't dropped it in another room
                 {
                     cout << "Inside the trunk is a very shiny, very portable "
                     << "treasure.\n";
                 }
-                else {
+                else
+                // The player has removed the treasure from the trunk
+                {
                     cout << "The trunk is empty.\n";
                 }
             }
             else
+            // The player hasn't opened the trunk
             {
                 cout << "The trunk is closed.\n";
             }
         }
         else
+        // The player is not in the cargo hold
         {
             cout << "There is no trunk here.\n";
         }
@@ -921,13 +1085,9 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
                 cout << "The parrot looks crestfallen, probably because you "
                 << "didn't say hi to him. I hope you're happy.\n";
             }
-            else if (cInfo.SAID_KEYWORD)
-            {
-                cout << "The parrot looks happy.\n";
-            }
             else
             {
-                cout << "The parrot is sitting patiently on his perch.\n";
+                cout << "The parrot looks happy.\n";
             }
         }
         else
@@ -948,6 +1108,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             cout << "You can just barely make out the ship from here.\n";
         }
         else
+        // The player is somewhere on the ship
         {
             cout << "You're on a boat!\n";
         }
@@ -956,21 +1117,27 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     {
         if (inventoryContains(cInfo.item, "key")
         or inventoryContains(cInfo.playerLocation.droppedItems, "key"))
+        // The player has the key or it is on the ground in the room the player
+        // is in
         {
             cout << "The key is golden, with a \"" << cInfo.name[0] << "\" on "
             << "one side.\n";
         }
         else if (cInfo.SAID_KEYWORD and rL == QUARTERS
         and not cInfo.DROPPED_KEY)
+        // The key is in the captain's quarters and the parrot has told the
+        // player where it is
         {
             cout << "The key was under the captain's bed, just like the parrot "
             << "said it would be.\n";
         }
         else if (rL == QUARTERS)
+        // The parrot has not told the player where the key is
         {
             cout << "You don't see a key anywhere.\n";
         }
         else
+        // The player is not in the captain's quarters
         {
             cout << "There is no key here.\n";
         }
@@ -995,11 +1162,13 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (rL == BANANA_TREE)
         {
             if (not inventoryContains(cInfo.item, "banana"))
+            // The player does not have a banana
             {
                 cout << "There is one bunch of ripe bananas on the tree within "
                 << "reach.\n";
             }
             else
+            // The player already has a banana
             {
                 cout << "The tree has been picked clean of ripe bananas.\n";
             }
@@ -1010,6 +1179,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             << "best to leave them alone.\n";
         }
         else
+        // The player is on the ship
         {
             cout << "There are no trees nearby.\n";
         }
@@ -1019,11 +1189,13 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         if (rL == BANANA_TREE)
         {
             if (not inventoryContains(cInfo.item, "banana"))
+            // The player does not have a banana
             {
                 cout << "There is one bunch of ripe bananas on the tree within "
                 << "reach.\n";
             }
             else
+            // The player already has a banana
             {
                 cout << "The tree has been picked clean of ripe bananas.\n";
             }
@@ -1034,6 +1206,7 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             << "best to leave them alone.\n";
         }
         else
+        // The player is on the ship
         {
             cout << "There are no banana trees nearby.\n";
         }
@@ -1060,29 +1233,36 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
     }
 }
 void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
+// Take function gets passed cInfo and lInfo so we can see information about the
+// player, and objTake is what the player is trying to take
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objTake == "bananas")
+    // Redefine possible synonym
     {
         objTake = "banana";
     }
     if (objTake == "keys")
+    // Redefine possible synonym
     {
         objTake = "key";
     }
     if (inventoryContains(cInfo.item, objTake))
+    // Explain why the player can't get duplicate items
     {
         cout << "You already have the " << objTake << ".\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (InventoryFull(cInfo.item))
+    // Respect MAX_ITEMS_CARRIED
     {
         cout << "Inventory is full.\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (objTake == "gorilla")
     {
-        if (rL == WHEEL)
+        if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // The gorilla is at the wheel
         {
             cout << "You cannot.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1096,6 +1276,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     else if (objTake == "knife")
     {
         if (inventoryContains(cInfo.playerLocation.droppedItems, "knife"))
+        // The player is taking the knife back from where they dropped it
         {
             cout << "You got the knife.\n";
             cInfo.DROPPED_KNIFE = false;
@@ -1115,6 +1296,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     else if (objTake == "banana")
     {
         if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+        // The player is taking a banana back from where they dropped it
         {
             cout << "You got a banana.\n";
             pickupItem(cInfo, lInfo, "banana");
@@ -1122,11 +1304,13 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
         else if (rL == BANANA_TREE)
         {
             if (inventoryContains(cInfo.item, "knife"))
+            // The player has the knife
             {
                 cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
+            // The player does not have the knife
             {
                 cout << "You cannot separate the banana from the tree.\n";
                 ProcessCommand(cInfo, lInfo);
@@ -1143,16 +1327,19 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
         if (rL == BANANA_TREE)
         {
             if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+            // The player is taking a banana back from where they dropped it
             {
                 cout << "You got a banana.\n";
                 pickupItem(cInfo, lInfo, "banana");
             }
             else if (inventoryContains(cInfo.item, "knife"))
+            // The player has the knife
             {
                 cout << "You got a banana.\n";
                 getItem(cInfo, lInfo, "banana");
             }
             else
+            // The player does not have the knife
             {
                 cout << "The stem of the banana tree is too tough.\n";
                 ProcessCommand(cInfo, lInfo);
@@ -1167,6 +1354,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     else if (objTake == "treasure")
     {
         if (inventoryContains(cInfo.playerLocation.droppedItems, "treasure"))
+        // The player is taking the treasure back from where they dropped it
         {
             cout << "You got the treasure.\n";
             cInfo.DROPPED_TREASURE = false;
@@ -1175,6 +1363,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
         else if (rL == HOLD and not cInfo.DROPPED_TREASURE)
         {
             if (not cInfo.GAVE_TREASURE)
+            // The treasure is in the trunk
             {
                 if (cInfo.OPENED_TRUNK)
                 {
@@ -1182,6 +1371,7 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
                     getItem(cInfo, lInfo, "treasure");
                 }
                 else
+                // Joke about forgetting to open the trunk first
                 {
                     cout << "You punch through the closed trunk and spend a "
                     << "great deal of time and effort pulling the treasure "
@@ -1275,19 +1465,23 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     else if (objTake == "key")
     {
         if (inventoryContains(cInfo.playerLocation.droppedItems, "key"))
+        // The player is taking the key back from where they dropped it
         {
             cout << "You got the key.\n";
             cInfo.DROPPED_KEY = false;
             pickupItem(cInfo, lInfo, "key");
         }
         else if (rL == QUARTERS and not cInfo.DROPPED_KEY)
+        // The key has not been taken from the quarters
         {
             if (cInfo.SAID_KEYWORD)
+            // Player solved the parrot puzzle
             {
                 cout << "You got the key.\n";
                 getItem(cInfo, lInfo, "key");
             }
             else
+            // Player took the key without solving the parrot puzzle
             {
                 cout << "You were in such a rush to finish the game without "
                 << "properly solving the puzzles that you decided to ignore the"
@@ -1369,6 +1563,8 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
     }
 }
 void Drop(CharInfo cInfo, locInfo lInfo[], string objDrop)
+// Drop function gets passed cInfo and lInfo so we can see information about the
+// player, and objDrop is what the player is trying to drop
 {
     if (objDrop == "bananas")
     {
@@ -1378,13 +1574,16 @@ void Drop(CharInfo cInfo, locInfo lInfo[], string objDrop)
     {
         objDrop = "key";
     }
+    // Redefine possible synonyms
     if (not (objDrop == "banana") and not (objDrop == "knife") and not
     (objDrop == "key") and not (objDrop == "treasure"))
+    // The player is trying to drop something that is not an item
     {
         cout << "I only understood you as far as wanting to drop an item.\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (not inventoryContains(cInfo.item, objDrop))
+    // The player does not have the item they're trying to drop
     {
         cout << "You don't have a " << objDrop << ".\n";
         ProcessCommand(cInfo, lInfo);
@@ -1397,7 +1596,11 @@ void Drop(CharInfo cInfo, locInfo lInfo[], string objDrop)
     else if (objDrop == "banana")
     {
         cout << "You dropped a banana on the floor.\n";
+        // We don't use a bool to keep track of whether the player has dropped a
+        // banana since the player can get another one even if they did drop one
         dropItem(cInfo, lInfo, "banana");
+        // We use dropItem() rather than removeItem() because we need to add the
+        // dropped object to the room's inventory
     }
     else if (objDrop == "knife")
     {
@@ -1419,6 +1622,8 @@ void Drop(CharInfo cInfo, locInfo lInfo[], string objDrop)
     }
 }
 void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
+// Give function gets passed cInfo and lInfo so we can see information about the
+// player, and objGive is what the player is trying to give
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objGive == "bananas")
@@ -1431,16 +1636,19 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
     }
     if (not (objGive == "banana") and not (objGive == "knife") and not
     (objGive == "key") and not (objGive == "treasure"))
+    // The player is trying to give something that is not an item
     {
         cout << "I only understood you as far as wanting to give.\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (not inventoryContains(cInfo.item, objGive))
+    // The player tried to give something they don't have
     {
         cout << "You don't have a " << objGive << ".\n";
         ProcessCommand(cInfo, lInfo);
     }
     else if (objGive == "knife")
+    // There is no scenario where the player should be able to give the knife
     {
         cout << "You should probably keep the knife.\n";
         ProcessCommand(cInfo, lInfo);
@@ -1448,6 +1656,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
     else if (objGive == "banana")
     {
         if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // The player and gorilla are both at the wheel
         {
             cout << "You gave the gorilla the banana. He seems offended for "
             << "some reason, but takes it anyway.\n";
@@ -1460,11 +1669,13 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == BRIG and not cInfo.OPENED_CELL)
+        // The prisoner is still in the cell
         {
             cout << "The prisoner is allergic to bananas, so best not.\n";
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == UDECK and not cInfo.GAVE_TREASURE and cInfo.SEEN_NATIVES)
+        // The player is trying to give a banana to the natives
         {
             cout << "The natives probably have their own supply of bananas.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1478,6 +1689,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
     else if (objGive == "key")
     {
         if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // The gorilla is at the wheel
         {
             cout << "The gorilla doesn't seem to want the key.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1488,13 +1700,16 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == BRIG and not cInfo.OPENED_CELL)
+        // The prisoner is still in the cell
         {
             cout << "The prisoner says \"You found the key! I don't have a "
             << "keyhole on this side, so go ahead and unlock that side and get "
             << "me out of here.\"\n";
+            // The player must unlock the cell, not give the prisoner the key
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == UDECK and cInfo.SEEN_NATIVES and not cInfo.GAVE_TREASURE)
+        // The player is trying to give the key to the natives
         {
             cout << "The natives have no interest in a key.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1508,6 +1723,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
     else if (objGive == "treasure")
     {
         if (rL == UDECK and cInfo.SEEN_NATIVES)
+        // The player is giving the treasure to the natives
         {
             cout << "You lay the treasure at the base of the gangplank. One of "
             << "the natives steps forward, picks it up, and looks it over. He "
@@ -1518,6 +1734,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
             removeItem(cInfo, lInfo, "treasure");
         }
         else if (rL == WHEEL and not cInfo.EGG_ONE and not cInfo.GAVE_BANANA)
+        // The player is trying to give the treasure to the gorilla
         {
             cout << "The gorilla takes the treasure from you and examines it. "
             << "He says \"I believe I've seen something like this before among "
@@ -1528,6 +1745,7 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // :)
         {
             cout << "The gorilla doesn't seem to want the treasure.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1538,18 +1756,23 @@ void Give(CharInfo cInfo, locInfo lInfo[], string objGive)
             ProcessCommand(cInfo, lInfo);
         }
         else if (rL == BRIG and not cInfo.OPENED_CELL)
+        // The prisoner is still in the cell and the player is trying to give
+        // them the treasure
         {
             cout << "The prisoner is taking a nap right now, though I'm sure "
             << "he'd be flattered that you thought of him.\n";
             ProcessCommand(cInfo, lInfo);
         }
-        else {
+        else
+        {
             cout << "There is nobody here to whom you can give the treasure.\n";
             ProcessCommand(cInfo, lInfo);
         }
     }
 }
 void Eat(CharInfo cInfo, locInfo lInfo[], string objEat)
+// Eat function gets passed cInfo and lInfo so we can see information about the
+// player, and objEat is what the player is trying to eat
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objEat == "bananas")
@@ -1586,8 +1809,12 @@ void Eat(CharInfo cInfo, locInfo lInfo[], string objEat)
             << "sure why you would, but you did.\n";
             cInfo.DROPPED_KEY = true;
             removeItem(cInfo, lInfo, "key");
+            // Setting the key to dropped and removing it from the player's
+            // inventory means they will never be able to get it again, so they
+            // must first open the prisoner's cell
         }
         else
+        // The player has not yet opened the prisoner's cell
         {
             cout << "I wouldn't.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1650,6 +1877,7 @@ void Eat(CharInfo cInfo, locInfo lInfo[], string objEat)
     else if (objEat == "prisoner")
     {
         if (rL == BRIG and not cInfo.OPENED_CELL)
+        // The prisoner is still in the cell
         {
             cout << "Cannibalism is never the answer on a banana-filled "
             << "island.\n";
@@ -1668,6 +1896,8 @@ void Eat(CharInfo cInfo, locInfo lInfo[], string objEat)
     }
 }
 void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
+// Cut function gets passed cInfo and lInfo so we can see information about the
+// player, and objCut is what the player is trying to cut
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objCut == "bananas")
@@ -1699,6 +1929,7 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
             }
         }
         else if (inventoryContains(cInfo.playerLocation.droppedItems, "banana"))
+        // There is a banana on the floor of the room the player is in
         {
             cout << "The knife looks too dirty to cut food.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1742,6 +1973,7 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
     else if (objCut == "gorilla")
     {
         if (rL == WHEEL and not cInfo.GAVE_BANANA)
+        // The player and the gorilla are at the wheel
         {
             cout << "That would only make it more angry.\n";
             ProcessCommand(cInfo, lInfo);
@@ -1772,6 +2004,8 @@ void Cut(CharInfo cInfo, locInfo lInfo[], string objCut)
     }
 }
 void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
+// Open function gets passed cInfo and lInfo so we can see information about the
+// player, and objOpen is what the player is trying to open
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objOpen == "cell")
@@ -1779,6 +2013,7 @@ void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
         if (rL == BRIG)
         {
             if (cInfo.UNLOCKED_CELL)
+            // Change later to just check for the player having the key
             {
                 cout << "You open the cell door. The prisoner says \"Oh thank "
                 << "God, I needed some fresh air. I'm gonna head to the wheel, "
@@ -1865,6 +2100,9 @@ void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
     }
 }
 void Unlock(CharInfo cInfo, locInfo lInfo[], string objUnlock)
+// Unlock function gets passed cInfo and lInfo so we can see information about
+// the player, and objUnlock is what the player is trying to unlock. Merge with
+// Open() later
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (objUnlock == "cell")
@@ -1919,6 +2157,7 @@ void Unlock(CharInfo cInfo, locInfo lInfo[], string objUnlock)
             else
             {
                 cout << "You don't see a keyhole anywhere on the trunk.\n";
+                // The player doesn't need to unlock the trunk, only to open it
                 ProcessCommand(cInfo, lInfo);
             }
         }
@@ -1935,19 +2174,25 @@ void Unlock(CharInfo cInfo, locInfo lInfo[], string objUnlock)
     }
 }
 void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
+// Sends the player to locToGo or explains why the player cannot go there
 {
     Location rL = cInfo.playerLocation.rawLoc;
     if (locToGo == "island")
     {
         if (rL == UDECK)
+        // The player is trying to go from the upper deck to the island
         {
             if (cInfo.GAVE_TREASURE)
+            // The natives do not block the path
             {
                 Island(cInfo, lInfo);
             }
             else
+            // The natives block the path
             {
                 if (not cInfo.SEEN_NATIVES)
+                // The player has not yet got the message that natives are
+                // blocking the path
                 {
                     cout << "The island's natives have apparently noticed your "
                     << "arrival, and have blocked your way off the ship. One of"
@@ -1957,6 +2202,8 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
                     ProcessCommand(cInfo, lInfo);
                 }
                 else
+                // The player has already got the message that the natives are
+                // blocking the path
                 {
                     cout << "The natives still block your path.\n";
                     ProcessCommand(cInfo, lInfo);
@@ -2001,17 +2248,24 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
         CargoHold(cInfo, lInfo);
     }
     else if (locToGo == "no_room")
+    // The player tried to move off the map
     {
         cout << "There is nowhere to go in that direction.\n";
         ProcessCommand(cInfo, lInfo);
     }
 }
 void Navigate(CharInfo cInfo, locInfo lInfo[], string drctn)
+// Handles navigation commands by calling goToLoc() with the desired location
+// using the player's current location and the direction they wanted to move
+// (drctn)
 {
     int spaceholder = drctn.find(" ");
-    if (spaceholder != -1)
+    if (not (spaceholder == -1))
+    // If the direction passed to the function is more than one word
     {
         drctn = drctn.substr(spaceholder+1);
+        // Use the second word as the actual direction (in case of commands like
+        // "move north" or "go down")
     }
     if (drctn == "north" or drctn == "n")
     {
@@ -2038,33 +2292,47 @@ void Navigate(CharInfo cInfo, locInfo lInfo[], string drctn)
         goToLoc(cInfo, lInfo, cInfo.playerLocation.nextRoom.down);
     }
     else
+    // The string drctn wasn't recognized as a valid direction
     {
         cout<<"Invalid direction. Please enter a cardinal direction, \"up\", or"
         <<" \"down\".\n\n";
         getline(cin, drctn);
         cout << endl;
+        // Makes the spacing look better
         transform(drctn.begin(), drctn.end(), drctn.begin(), ::tolower);
+        // Makes all input lowercase
         Navigate(cInfo, lInfo, drctn);
+        // Function recurses with new direction
     }
 }
 bool inventoryContains(string inventory[], string item)
+// Check whether the inventory "inventory[]" contains the item "item"
 {
-    int i;
+    int i;  // Iterator for the loop on the next line
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    // Iterates through every inventory space (note that inventory is 0-indexed)
     {
         if (inventory[i] == item)
+        // The inventory contains the specified item at inventory[i]
         {
             return true;
+            // The function returns true to its call and stops further function
+            // execution to prevent the later return false statement
         }
     }
+    // If the function reaches this point, the item was not found in the given
+    // inventory, so we return false
     return false;
 }
 bool InventoryFull(string inventory[])
+// Check whether the inventory is full. Responds gracefully in the event
+// MAX_ITEMS_CARRIED is changed
 {
     int i;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
     {
         if (inventory[i] == "empty")
+        // There is an empty space in the inventory at inventory[i]
         {
             return false;
         }
@@ -2072,10 +2340,15 @@ bool InventoryFull(string inventory[])
     return true;
 }
 void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
+// Used to put an item in the player's inventory. Should check for a full
+// inventory beforehand to avoid overflow
 {
     int i;
     int spaceNumber = -1;
     for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    // The loop counts backwards from MAX_ITEMS_CARRIED but still finds the
+    // lowest available space because it does not exit after finding the first
+    // empty space
     {
         if (cInfo.item[i] == "empty")
         {
@@ -2086,18 +2359,28 @@ void getItem(CharInfo cInfo, locInfo lInfo[], string objGet)
     {
         cout << "ERROR: Inventory overflow\n";
         abort();
+        // The inventory is somehow full despite inventoryFull() saying
+        // otherwise. Kill the program to avoid unforeseen consequences
     }
     else
     {
         cInfo.item[spaceNumber] = objGet;
+        // Put the item objGet into the first open inventory space
         ProcessCommand(cInfo, lInfo);
     }
 }
 void pickupItem(CharInfo cInfo, locInfo lInfo[], string objPick)
+// Used to put an item in the player's inventory. Should check for a full
+// inventory beforehand to avoid overflow. Different from getItem() in that this
+// function is used to retrieve dropped items, and thus removes them from the
+// room's inventory after giving them to the player
 {
     int i;
     int spaceNumber = -1;
     for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    // The loop counts backwards from MAX_ITEMS_CARRIED but still finds the
+    // lowest available space because it does not exit after finding the first
+    // instance of the item
     {
         if (cInfo.playerLocation.droppedItems[i] == objPick)
         {
@@ -2108,11 +2391,17 @@ void pickupItem(CharInfo cInfo, locInfo lInfo[], string objPick)
     {
         cout << "ERROR: No item\n";
         abort();
+        // Item was not found in the current room despite that being a
+        // requirement for this function to run. Kill the program to avoid
+        // unforeseen consequences
     }
     else
     {
         cInfo.playerLocation.droppedItems[spaceNumber] = "empty";
+        // Empty the space in the room where the item was
         lInfo[cInfo.playerLocation.rawLoc].droppedItems[spaceNumber] = "empty";
+        // Also remove the item from lInfo since that object is used to populate
+        // cInfo.playerLocation
         getItem(cInfo, lInfo, objPick);
     }
 }
@@ -2121,6 +2410,9 @@ void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
     int i;
     int spaceNumber = -1;
     for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    // The loop counts backwards from MAX_ITEMS_CARRIED but still finds the
+    // lowest available space because it does not exit after finding the first
+    // instance of the item
     {
         if (cInfo.item[i] == objRem)
         {
@@ -2131,10 +2423,14 @@ void removeItem(CharInfo cInfo, locInfo lInfo[], string objRem)
     {
         cout << "ERROR: No item\n";
         abort();
+        // Item was not found in the player's inventory despite that being a
+        // requirement for this function to run. Kill the program to avoid
+        // unforeseen consequences
     }
     else
     {
         cInfo.item[spaceNumber] = "empty";
+        // Remove the item from the player's inventory at the index spaceNumber
         ProcessCommand(cInfo, lInfo);
     }
 }
@@ -2143,6 +2439,9 @@ void dropItem(CharInfo cInfo, locInfo lInfo[], string objPut)
     int i;
     int spaceNumber = -1;
     for (i = MAX_ITEMS_CARRIED - 1; i >= 0; i--)
+    // The loop counts backwards from MAX_ITEMS_CARRIED but still finds the
+    // lowest available space because it does not exit after finding the first
+    // empty space
     {
         if (cInfo.playerLocation.droppedItems[i] == "empty")
         {
@@ -2153,52 +2452,85 @@ void dropItem(CharInfo cInfo, locInfo lInfo[], string objPut)
     {
         cout << "ERROR: droppedItems overflow\n";
         abort();
+        // The room's inventory is somehow full despite inventoryFull() saying
+        // otherwise. Kill the program to avoid unforeseen consequences
     }
     else
     {
         cInfo.playerLocation.droppedItems[spaceNumber] = objPut;
+        // Drop the item to the room's inventory at the index spaceNumber
         lInfo[cInfo.playerLocation.rawLoc].droppedItems[spaceNumber] = objPut;
+        // Also add the item to lInfo since that object is used to populate
+        // cInfo.playerLocation
         removeItem(cInfo, lInfo, objPut);
     }
 }
 string pigLatin(string inp)
+// Takes a string input and returns the pig latin equivalent. ProcessCommand()
+// ensures that this function is only ever passed one word at a time
 {
     int vowelSpace;
+    // Used to store the location of the first vowel in the word
     string temp_one, temp_two, out;
+    // temp_one and temp_two are used to store the first and second parts of the
+    // word, respectively, in the event that the word contains consonants before
+    // the first vowel. "out" is where we put the output to ensure it ends up as
+    // a string before we return it, just in case
     vowelSpace = inp.find_first_of(VOWELS);
     if (vowelSpace == -1)
+    // The word contains no vowels, somehow. Probably just random typing
     {
         out = inp + "ay";
+        // Append "ay" and return the result
         return out;
     }
     else if (vowelSpace == 0)
+    // The first letter in the word is a vowel
     {
         out = inp + "way";
+        // Append "way" and return the result
         return out;
     }
     else
     {
         temp_one = inp.substr(0,vowelSpace);
+        // Store the first part of the word up to but not including the first
+        // vowel
         temp_two = inp.substr(vowelSpace);
+        // Store the second part of the word starting with the first vowel
         out = temp_two + temp_one + "ay";
+        // Store the second part of the word, the first consonants of the word,
+        // and "ay", in that order
         return out;
     }
     
 }
 void getDroppedItems(CharInfo cInfo, locInfo lInfo[])
+// Tell the player what dropped items the room contains
 {
-    int i;
+    int i;  // Iterator for loops
     int num_items = 0;
+    // Number of dropped items. Setting it to 0 here acts as a default value
     string floorItems[MAX_ITEMS_CARRIED];
+    // Array of items on the floor
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
+    // Order doesn't actually matter here in terms of functionality alone, but
+    // we still start from 0 so that the items are described in the order that
+    // they were dropped
     {
         if (not (cInfo.playerLocation.droppedItems[i] == "empty"))
+        // There is an item at the indicated space
         {
             floorItems[num_items] = cInfo.playerLocation.droppedItems[i];
+            // Add the item at the indicated space to floorItems
             num_items++;
+            // Use num_items in conjunction with the fact that floorItems is
+            // 0-indexed to keep track of what space of floorItems should be
+            // populated
         }
     }
     switch (num_items)
+    // Update later to support MAX_ITEMS_CARRIED being a number greater than 3
     {
         case 0:
         cout << endl;

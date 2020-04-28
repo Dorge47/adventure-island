@@ -503,9 +503,6 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     // words, so we can split "commands" into "word_one" and "word_two"
     bool one_word = false;
     // Stores whether the command contains only one word
-    Location rL = cInfo.playerLocation.rawLoc;
-    // Shorthand so that we don't have to keep writing out
-    // "cInfo.playerLocation.rawLoc"
     cout << endl;
     // Makes the spacing look better
     getline(cin, commands);
@@ -738,7 +735,7 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
     // Ends the game if the player gave the gorilla a banana and freed the
     // prisoner from the brig
     {
-        if (rL == WHEEL)
+        if (cInfo.playerLocation.rawLoc == WHEEL)
         // The player is at the wheel
         {
             if (cInfo.GAVE_BANANA)
@@ -790,6 +787,14 @@ void ProcessCommand(CharInfo cInfo, locInfo lInfo[])
             cout << "You can't sail the ship from here.\n";
             ProcessCommand(cInfo, lInfo);
         }
+    }
+    else if (word_one == "help")
+    {
+        cout << "Commands may be one or two words depending on which command is"
+        << " used. Available first words include \"go\", \"look\",\"take\", "
+        << "\"give\", \"drop\", \"cut\", and \"eat\", as well as several "
+        << "synonyms for those words.\n";
+        ProcessCommand(cInfo, lInfo);
     }
     else
     // The player entered an unknown command
@@ -2008,6 +2013,10 @@ void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
 // player, and objOpen is what the player is trying to open
 {
     Location rL = cInfo.playerLocation.rawLoc;
+    if (objOpen == "door" and rL == BRIG)
+    {
+        objOpen = "cell";
+    }
     if (objOpen == "cell")
     {
         if (rL == BRIG)
@@ -2064,7 +2073,8 @@ void Open(CharInfo cInfo, locInfo lInfo[], string objOpen)
             }
             else
             {
-                cout << "You opened the trunk.\n";
+                cout << "You opened the trunk. There is a gleaming treasure "
+                << "inside\n";
                 cInfo.OPENED_TRUNK = true;
                 ProcessCommand(cInfo, lInfo);
             }

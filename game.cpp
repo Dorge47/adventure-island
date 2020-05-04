@@ -137,7 +137,7 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[UDECK].description += "is a gangplank leading back to the island to ";
     lInfo[UDECK].description += "the north. The crow's nest is above you.";
     lInfo[UDECK].nextRoom.north = "island";
-    lInfo[UDECK].nextRoom.south = "no_room";
+    lInfo[UDECK].nextRoom.south = "off_ship";
     lInfo[UDECK].nextRoom.east = "wheel";
     lInfo[UDECK].nextRoom.west = "quarters";
     lInfo[UDECK].nextRoom.up = "crows_nest";
@@ -151,9 +151,9 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     }
     lInfo[WHEEL].description = "The gorilla still blocks the wheel. The deck ";
     lInfo[WHEEL].description += "is to the west.";
-    lInfo[WHEEL].nextRoom.north = "no_room";
-    lInfo[WHEEL].nextRoom.south = "no_room";
-    lInfo[WHEEL].nextRoom.east = "no_room";
+    lInfo[WHEEL].nextRoom.north = "off_ship";
+    lInfo[WHEEL].nextRoom.south = "off_ship";
+    lInfo[WHEEL].nextRoom.east = "off_ship";
     lInfo[WHEEL].nextRoom.west = "uDeck";
     lInfo[WHEEL].nextRoom.up = "no_room";
     lInfo[WHEEL].nextRoom.down = "no_room";
@@ -487,7 +487,7 @@ Island will happen.*/
         cout<<"The island is forested with banana trees. Most of the bananas "
         <<"are green, but one tree to your north might have ripe bananas. There"
         <<" are ominous drums in the background. There is a ship to your south "
-        <<"with a gangplank to the shore.\n";
+        <<"with a gangplank to the shore. In front of the ship is a sign.\n";
         cInfo.SEEN_I = true;
     }
     else
@@ -1249,6 +1249,18 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
             cout << "There is no trapdoor here.\n";
         }
     }
+    else if (objLook == "sign")
+    {
+        if (rL == ISLAND)
+        {
+            cout << "The sign reads \"BEWARE OF SAVAGE NATIVES\" in messy "
+            << "handwriting, almost as if someone had written it in a hurry.\n";
+        }
+        else
+        {
+            cout << "There is no sign here.\n";
+        }
+    }
     else
     {
         cout << "I only understood you as far as wanting to look.\n";
@@ -1575,6 +1587,19 @@ void Take(CharInfo cInfo, locInfo lInfo[], string objTake)
         else
         {
             cout << "There is no trapdoor here.\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+    }
+    else if (objTake == "sign")
+    {
+        if (rL == ISLAND)
+        {
+            cout << "You get the feeling that's a bad idea...\n";
+            ProcessCommand(cInfo, lInfo);
+        }
+        else
+        {
+            cout << "There is no sign here.\n";
             ProcessCommand(cInfo, lInfo);
         }
     }
@@ -2285,6 +2310,26 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
         cout << "You try to climb to the crow's nest, but quickly realize there"
         << " is nothing on which to climb. The crew must've been very good at"
         << " acrobatics.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "off_ship")
+    {
+        if (rL == UDECK)
+        {
+            cout << "This ship has no plank to walk. What kind of pirates don't"
+            << " have a plank?";
+        }
+        else if (cInfo.GAVE_BANANA)
+        {
+            cout << "You walk to the edge of the ship and look out to see a "
+            << "blue sea. Nowhere to go except shark-infested waters.\n";
+        }
+        else
+        {
+            cout << "The gorilla steps in front of you and puts a hand out. He "
+            << "says \"There isn't currently a lifeguard on duty. You'd better "
+            << "stay out of the water.\"\n";
+        }
         ProcessCommand(cInfo, lInfo);
     }
 }

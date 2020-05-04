@@ -135,12 +135,13 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[UDECK].description += "and a ladder down to the lower deck. The ";
     lInfo[UDECK].description += "captain's quarters are to the west and there ";
     lInfo[UDECK].description += "is a gangplank leading back to the island to ";
-    lInfo[UDECK].description += "the north.";
+    lInfo[UDECK].description += "the north. The crow's nest is above you.";
     lInfo[UDECK].nextRoom.north = "island";
     lInfo[UDECK].nextRoom.south = "no_room";
     lInfo[UDECK].nextRoom.east = "wheel";
     lInfo[UDECK].nextRoom.west = "quarters";
-    lInfo[UDECK].nextRoom.up = "no_room";
+    lInfo[UDECK].nextRoom.up = "crows_nest";
+    // Easter egg, not actually a room
     lInfo[UDECK].nextRoom.down = "lDeck";
     lInfo[WHEEL].name = "wheel";
     lInfo[WHEEL].rawLoc = WHEEL;
@@ -2277,6 +2278,13 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
     // The player tried to move off the map
     {
         cout << "There is nowhere to go in that direction.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "crows_nest")
+    {
+        cout << "You try to climb to the crow's nest, but quickly realize there"
+        << " is nothing on which to climb. The crew must've been very good at"
+        << " acrobatics.\n";
         ProcessCommand(cInfo, lInfo);
     }
 }

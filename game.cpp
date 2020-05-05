@@ -2348,8 +2348,8 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
         }
         else
         {
-            cout << "The prisoner says \"I get that you want to explore, but can "
-            << "you please hurry up and try to find the key?\"\n";
+            cout << "The prisoner says \"I get that you want to explore, but "
+            << "can you please hurry up and try to find the key?\"\n";
         }
         ProcessCommand(cInfo, lInfo);
     }
@@ -2897,7 +2897,8 @@ void loadData(CharInfo cInfo, locInfo lInfo[])
         for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
         {
             lineHolder = entireSave.find_first_of("\n");
-            lInfo[BANANA_TREE].droppedItems[i] = entireSave.substr(0, lineHolder);
+            lInfo[BANANA_TREE].droppedItems[i] = 
+            entireSave.substr(0, lineHolder);
             entireSave.erase(0, lineHolder + 1);
         }
         for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)

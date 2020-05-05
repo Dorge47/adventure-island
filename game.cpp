@@ -88,6 +88,8 @@ int main()
     cout << endl;
     cout<<"You have just awakened on a strange island with a terrible headache."
     <<" You can't remember anything about yourself or where you are.\n\n";
+    cout << "If you are trying to load a previously saved file, you must type "
+    << "\"load\" now.\n\n";
     startNewGame(cInfo, room);
     return 0;
 }
@@ -843,9 +845,13 @@ void Look(CharInfo cInfo, locInfo lInfo[], string objLook)
         {
             cout << "There is a wooden ceiling inches above your face.\n";
         }
-        else if (rL == WHEEL or rL == UDECK)
+        else if (rL == WHEEL)
         {
             cout << "There are sails above you.\n";
+        }
+        else if (rL == UDECK)
+        {
+            cout << "The crow's nest is above you.\n";
         }
         else if (rL == LDECK)
         {
@@ -2320,11 +2326,13 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
             << " have a plank?\n";
         }
         else if (cInfo.GAVE_BANANA)
+        // The player is at the wheel
         {
             cout << "You walk to the edge of the ship and look out to see a "
             << "blue sea. Nowhere to go except shark-infested waters.\n";
         }
         else
+        // The gorilla is still at the wheel
         {
             cout << "The gorilla steps in front of you and puts a hand out. He "
             << "says \"There isn't currently a lifeguard on duty. You'd better "
@@ -2334,8 +2342,15 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
     }
     else if (locToGo == "angry_p")
     {
-        cout << "The prisoner says \"I get that you want to explore, but can "
-        << "you please hurry up and try to find the key?\"\n";
+        if (cInfo.OPENED_CELL)
+        {
+            cout << "Nothing that way but a wall.\n";
+        }
+        else
+        {
+            cout << "The prisoner says \"I get that you want to explore, but can "
+            << "you please hurry up and try to find the key?\"\n";
+        }
         ProcessCommand(cInfo, lInfo);
     }
     else if (locToGo == "bed")
@@ -2624,14 +2639,12 @@ string pigLatin(string inp)
     {
         out = inp + "ay";
         // Append "ay" and return the result
-        return out;
     }
     else if (vowelSpace == 0)
     // The first letter in the word is a vowel
     {
         out = inp + "way";
         // Append "way" and return the result
-        return out;
     }
     else
     {
@@ -2643,9 +2656,8 @@ string pigLatin(string inp)
         out = temp_two + temp_one + "ay";
         // Store the second part of the word, the first consonants of the word,
         // and "ay", in that order
-        return out;
     }
-    
+    return out;
 }
 void getDroppedItems(CharInfo cInfo, locInfo lInfo[])
 // Tell the player what dropped items the room contains

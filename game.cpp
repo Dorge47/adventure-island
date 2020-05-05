@@ -106,10 +106,10 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[ISLAND].description += "to the ship to the south.";
     lInfo[ISLAND].nextRoom.north = "banana_tree";
     lInfo[ISLAND].nextRoom.south = "uDeck";
-    lInfo[ISLAND].nextRoom.east = "no_room";
-    lInfo[ISLAND].nextRoom.west = "no_room";
-    lInfo[ISLAND].nextRoom.up = "no_room";
-    lInfo[ISLAND].nextRoom.down = "no_room";
+    lInfo[ISLAND].nextRoom.east = "forest";
+    lInfo[ISLAND].nextRoom.west = "forest";
+    lInfo[ISLAND].nextRoom.up = "sky";
+    lInfo[ISLAND].nextRoom.down = "isl_dig";
     lInfo[BANANA_TREE].name = "banana_tree";
     lInfo[BANANA_TREE].rawLoc = BANANA_TREE;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -119,12 +119,12 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[BANANA_TREE].description = "There is a large banana tree here, and ";
     lInfo[BANANA_TREE].description += "thick forest to all sides except the ";
     lInfo[BANANA_TREE].description += "south.";
-    lInfo[BANANA_TREE].nextRoom.north = "no_room";
+    lInfo[BANANA_TREE].nextRoom.north = "forest";
     lInfo[BANANA_TREE].nextRoom.south = "island";
-    lInfo[BANANA_TREE].nextRoom.east = "no_room";
-    lInfo[BANANA_TREE].nextRoom.west = "no_room";
-    lInfo[BANANA_TREE].nextRoom.up = "no_room";
-    lInfo[BANANA_TREE].nextRoom.down = "no_room";
+    lInfo[BANANA_TREE].nextRoom.east = "forest";
+    lInfo[BANANA_TREE].nextRoom.west = "forest";
+    lInfo[BANANA_TREE].nextRoom.up = "sky";
+    lInfo[BANANA_TREE].nextRoom.down = "isl_dig";
     lInfo[UDECK].name = "uDeck";
     lInfo[UDECK].rawLoc = UDECK;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -155,8 +155,8 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[WHEEL].nextRoom.south = "off_ship";
     lInfo[WHEEL].nextRoom.east = "off_ship";
     lInfo[WHEEL].nextRoom.west = "uDeck";
-    lInfo[WHEEL].nextRoom.up = "no_room";
-    lInfo[WHEEL].nextRoom.down = "no_room";
+    lInfo[WHEEL].nextRoom.up = "sky";
+    lInfo[WHEEL].nextRoom.down = "ship_dig";
     lInfo[LDECK].name = "lDeck";
     lInfo[LDECK].rawLoc = LDECK;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -167,8 +167,8 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[LDECK].description += " trapdoor below you.";
     lInfo[LDECK].nextRoom.north = "hold";
     lInfo[LDECK].nextRoom.south = "galley";
-    lInfo[LDECK].nextRoom.east = "no_room";
-    lInfo[LDECK].nextRoom.west = "no_room";
+    lInfo[LDECK].nextRoom.east = "wall";
+    lInfo[LDECK].nextRoom.west = "wall";
     lInfo[LDECK].nextRoom.up = "uDeck";
     lInfo[LDECK].nextRoom.down = "brig";
     lInfo[GALLEY].name = "galley";
@@ -180,11 +180,11 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     lInfo[GALLEY].description = "There is a parrot in the corner of the room, ";
     lInfo[GALLEY].description += "and a doorway to your north.";
     lInfo[GALLEY].nextRoom.north = "lDeck";
-    lInfo[GALLEY].nextRoom.south = "no_room";
-    lInfo[GALLEY].nextRoom.east = "no_room";
-    lInfo[GALLEY].nextRoom.west = "no_room";
-    lInfo[GALLEY].nextRoom.up = "no_room";
-    lInfo[GALLEY].nextRoom.down = "no_room";
+    lInfo[GALLEY].nextRoom.south = "wall";
+    lInfo[GALLEY].nextRoom.east = "wall";
+    lInfo[GALLEY].nextRoom.west = "wall";
+    lInfo[GALLEY].nextRoom.up = "ceiling";
+    lInfo[GALLEY].nextRoom.down = "ship_dig";
     lInfo[BRIG].name = "brig";
     lInfo[BRIG].rawLoc = BRIG;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -193,12 +193,12 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     }
     lInfo[BRIG].description = "The prisoner is still locked in his cell. There";
     lInfo[BRIG].description += " is a ladder leading back up.";
-    lInfo[BRIG].nextRoom.north = "no_room";
-    lInfo[BRIG].nextRoom.south = "no_room";
-    lInfo[BRIG].nextRoom.east = "no_room";
-    lInfo[BRIG].nextRoom.west = "no_room";
+    lInfo[BRIG].nextRoom.north = "angry_p";
+    lInfo[BRIG].nextRoom.south = "angry_p";
+    lInfo[BRIG].nextRoom.east = "angry_p";
+    lInfo[BRIG].nextRoom.west = "angry_p";
     lInfo[BRIG].nextRoom.up = "lDeck";
-    lInfo[BRIG].nextRoom.down = "no_room";
+    lInfo[BRIG].nextRoom.down = "ship_dig";
     lInfo[QUARTERS].name = "quarters";
     lInfo[QUARTERS].rawLoc = QUARTERS;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -207,12 +207,12 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     }
     lInfo[QUARTERS].description = "Inside the captain's quarters, there is a ";
     lInfo[QUARTERS].description += "bed and a table.";
-    lInfo[QUARTERS].nextRoom.north = "no_room";
-    lInfo[QUARTERS].nextRoom.south = "no_room";
+    lInfo[QUARTERS].nextRoom.north = "desk";
+    lInfo[QUARTERS].nextRoom.south = "wall";
     lInfo[QUARTERS].nextRoom.east = "uDeck";
-    lInfo[QUARTERS].nextRoom.west = "no_room";
-    lInfo[QUARTERS].nextRoom.up = "no_room";
-    lInfo[QUARTERS].nextRoom.down = "no_room";
+    lInfo[QUARTERS].nextRoom.west = "bed";
+    lInfo[QUARTERS].nextRoom.up = "ceiling";
+    lInfo[QUARTERS].nextRoom.down = "crew";
     lInfo[HOLD].name = "hold";
     lInfo[HOLD].rawLoc = HOLD;
     for (i = 0; i <= MAX_ITEMS_CARRIED - 1; i++)
@@ -224,12 +224,12 @@ void startNewGame(CharInfo cInfo, locInfo lInfo[]){
     // Description cut short intentionally, the rest is appended later so we can
     // modify it based on whether the trunk is open, and if it is, whether it
     // contains treasure
-    lInfo[HOLD].nextRoom.north = "no_room";
+    lInfo[HOLD].nextRoom.north = "containers";
     lInfo[HOLD].nextRoom.south = "lDeck";
-    lInfo[HOLD].nextRoom.east = "no_room";
-    lInfo[HOLD].nextRoom.west = "no_room";
-    lInfo[HOLD].nextRoom.up = "no_room";
-    lInfo[HOLD].nextRoom.down = "no_room";
+    lInfo[HOLD].nextRoom.east = "containers";
+    lInfo[HOLD].nextRoom.west = "containers";
+    lInfo[HOLD].nextRoom.up = "ceiling";
+    lInfo[HOLD].nextRoom.down = "ship_dig";
     cInfo.SAID_KEYWORD = false;
     // Keyword for the parrot
     cInfo.GAVE_TREASURE = false;
@@ -2317,7 +2317,7 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
         if (rL == UDECK)
         {
             cout << "This ship has no plank to walk. What kind of pirates don't"
-            << " have a plank?";
+            << " have a plank?\n";
         }
         else if (cInfo.GAVE_BANANA)
         {
@@ -2330,6 +2330,69 @@ void goToLoc(CharInfo cInfo, locInfo lInfo[], string locToGo)
             << "says \"There isn't currently a lifeguard on duty. You'd better "
             << "stay out of the water.\"\n";
         }
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "angry_p")
+    {
+        cout << "The prisoner says \"I get that you want to explore, but can "
+        << "you please hurry up and try to find the key?\"\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "bed")
+    {
+        cout << "You walk over to the bed and sit down. It feels a little "
+        << "stiff.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "containers")
+    {
+        cout << "You almost trip over the various containers laying about in "
+        << "the room. Better watch your step!\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "desk")
+    {
+        cout << "You walk up to the captain's table. It's a complete mess, "
+        << "covered in notes that are barely more than scribbles.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "crew")
+    {
+        cout << "You look down and see a loose floorboard. Moving it aside, you"
+        << " reveal that there is actually a crew member sleeping there! ... "
+        << "You decide to let him sleep.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "wall")
+    {
+        cout << "Nothing that way but a wall.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "ceiling")
+    {
+        cout << "You don't see a way up into the ceiling.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "forest")
+    {
+        cout << "Nothing that way but thick forest. You don't feel like getting"
+        << " lost in the woods today.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "sky")
+    {
+        cout << "That's not possible unless you have wings.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "isl_dig")
+    {
+        cout << "It doesn't feel right to dig on the island.\n";
+        ProcessCommand(cInfo, lInfo);
+    }
+    else if (locToGo == "ship_dig")
+    {
+        cout << "Digging through the floor of the ship seems like a bad idea if"
+        << " you ever want it to sail properly.\n";
         ProcessCommand(cInfo, lInfo);
     }
 }
